@@ -18,6 +18,8 @@
       </div>
     </div>
 
+    
+
     <div class="table-responsive">
     <table class="table" v-if="$store.state.gateway.state == 'connected'">
       <thead>
@@ -25,15 +27,15 @@
         <th>Id</th>
         <th>Temperature</th>
         <th>Humidity </th>
-        <th>CO2 </th>
+        <th>CO<sub>2</sub> </th>
         <th>Illuminance </th>
         <th>Pressure </th>
         <th>VOC </th>
         <th>Orientation </th>
-        <th>Press count </th>
+        <th>Button</th>
         <th>Sound level </th>
         <th>Motion count </th>
-        <th>Voltage </th>
+        <th>Battery </th>
         <th>RSSI </th>
         <th>Time</th>
         <th></th>
@@ -55,14 +57,16 @@
         <td>{{node.recv.voltage}} V</td>
         <td>{{node.recv.rssi}} </td>
         <td>{{node.recv.ts}}</td>
-        <td></td>
+        <td><b-button @click="detachModalId=node.id; detachModalShow=true" variant="" ><font-awesome-icon icon="times" /></b-button></td>
       </tr>
       </tbody>
     </table>
     </div>
 
 
-<!--    <div >{{$store.state}}</div> -->
+    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this node?">
+      Id: {{detachModalId}}
+    </b-modal>
 
   </div>
 </template>
@@ -75,14 +79,14 @@ export default {
   name: 'home',
   data () {
     return {
-      selected: this.$store.state.gateway.device
+      selected: this.$store.state.gateway.device,
+      detachModalId: null,
+      detachModalShow: null
     }
   },
   components: {
-    // HelloWorld
   },
   created() {
-    
   },
   computed: {
     select_serial_port_oprions: function () {
@@ -103,6 +107,9 @@ export default {
       if (this.selected && this.selected.length) {
         this.$store.dispatch('gateway_connect', this.selected);
       }
+    },
+    detachModalOk() {
+      this.$store.dispatch('gateway_node_detach', this.detachModalId);
     }
   }
 }

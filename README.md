@@ -14,3 +14,9 @@ npm run electron:serve
 ```
 npm run electron:build
 ```
+
+
+### Docs
+
+https://bootstrap-vue.js.org/docs/components/button
+https://fontawesome.com/how-to-use/on-the-web/using-with/vuejs
