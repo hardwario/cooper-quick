@@ -3,25 +3,7 @@
 const EventEmitter = require('events');
 const { ATClient, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED } = require("./atclient");
 
-const RECV_DECODE = [
-    ["rssi", parseInt],
-    ["id", null],
-    ["sequence", parseInt],
-    ["altitude", parseInt],
-    ["co2-conc", parseInt],
-    ["humidity", parseFloat],
-    ["illuminance", parseInt],
-    ["motion-count", parseInt],
-    ["orientation", parseInt],
-    ["press-count", parseInt],
-    ["pressure", parseInt],
-    ["sound-level", parseInt],
-    ["temperature", parseFloat],
-    ["voc-conc", parseInt],
-    ["voltage", parseFloat]
-];
-
-class Gateway extends EventEmitter {
+class Node extends EventEmitter {
     constructor(device) {
         super();
 
@@ -32,9 +14,8 @@ class Gateway extends EventEmitter {
         this._at.on('error', (msg)=>{
             this.emit('error', msg)
         });
-        
-        this.nodeDetach = this.nodeDetach.bind(this);
-        this.nodeAttach = this.nodeAttach.bind(this);
+
+        this.setKey = this.setKey.bind(this);
         this.setChannel = this.setChannel.bind(this);
         this._storeConfig = this._storeConfig.bind(this);
     }
@@ -59,37 +40,16 @@ class Gateway extends EventEmitter {
         this._at.command(command, callback, timeout);
     }
 
-    getNodeList() {
-        return new Promise((resolve, reject)=>{
-            this._at.command('$LIST', (cmd, rows) => { 
-                if (rows === null) {
-                    return reject("Error reading node list.");
-                }else {
-                    resolve( rows.map((row)=>{
-                            let split = row.split(',');
-                            return {"id": split[0], "alias": split[1].slice(1, split[1].length - 2), recv: {}}
-                        })
-                    );
-                }
-            });
-        });
+    send(){
+        return this._at.commandp("$SEND");
     }
 
-    nodeDetach(id){
-        return new Promise((resolve, reject)=>{
-            this._at.commandp('$DETACH=' + id)
-                .then(this._storeConfig)
-                .then(resolve)
-                .catch(reject);
-        });
-    }
-
-    nodeAttach(id, key){
+    setKey(key){
         return new Promise((resolve, reject)=>{
             if (key.length != 32){
-                return reject("Key has bad length");
+                return reject("Key has bad length.");
             }
-            this._at.commandp('$ATTACH=' + id + ',' + key)
+            this._at.commandp('$KEY=' + key)
                 .then(this._storeConfig)
                 .then(resolve)
                 .catch(reject);
@@ -127,7 +87,7 @@ class Gateway extends EventEmitter {
             this.emit('update', {model: value});
         }
         else if (command == "+CGMR") {
-            this.firmwareVersion = value;
+            this.firmware_version = value;
             this.emit('update', {firmwareVersion: value});
         }
         else if (command == "+CGSN") {
@@ -145,9 +105,11 @@ class Gateway extends EventEmitter {
         if (state == STATE_CONNECTED) {
             
             this._at.command("+CGMM", (command, response)=>{
-                if (response && response[0].indexOf("DONGLE") > -1) {
+                if (response && /\+CGMM\:\s+COOPER R\d+\.\d+/.test(response[0]) ) {
                     this._state = STATE_CONNECTED;
                     this.emit("state", this._state);
+
+                    this._attributes = {}
 
                     this._update(command, response);
                     this._at.command("+CGMR", this._update.bind(this));
@@ -155,7 +117,7 @@ class Gateway extends EventEmitter {
                     this._at.command("$CHANNEL?", this._update.bind(this));
 
                 } else {
-                    this.emit("error", "This device is not cooper dongle.");
+                    this.emit("error", "This device is not cooper node.");
                     this._at.disconnect();
                 }
             });
@@ -168,30 +130,9 @@ class Gateway extends EventEmitter {
     }
 
     _atURC(line) {
-        console.log("Gateway urc:", line);
-
-        if (line.startsWith('$RECV:')) {
-            let payload = this._decodeRECV(line);
-            this.emit('recv', payload);
-            return;
-        }
-    }
-
-    _decodeRECV(line) {
-        let values = line.slice(7).split(',');
-        let payload = {};
-        for (let i=0, l=RECV_DECODE.length; i < l; i++) {
-            let decode = RECV_DECODE[i];
-            let value = values[i];
-            if (value != "") {
-                payload[decode[0]] = decode[1] ? decode[1](value) : value;
-            } else {
-                payload[decode[0]] = null;
-            }
-        }
-        return payload;
+        console.log("Node urc:", line);
     }
 }
 
 
-module.exports = { Gateway, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED }
+module.exports = { Node, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED }

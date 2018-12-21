@@ -9,17 +9,25 @@
 
       <b-collapse is-nav id="nav_collapse">
         <b-navbar-nav>
-          <b-nav-item to="/">Devices</b-nav-item>
+          <b-nav-item to="/">Dongle</b-nav-item>
+          <b-nav-item to="/node">Node</b-nav-item>
           <b-nav-item to="/config">Config</b-nav-item>
           <b-nav-item to="/about">About</b-nav-item>
         </b-navbar-nav>
 
         <b-navbar-nav class="ml-auto">
-          <button class="btn btn-danger" v-if="$store.state.state == 'connected'" @click="disconnect">Disconnect dongle</button>
+          <button class="btn btn-danger" v-if="$store.state.gateway.state == 'connected'" @click="disconnect">Disconnect dongle</button>
         </b-navbar-nav>
 
       </b-collapse>
     </b-navbar>
+
+    <b-alert variant="danger"
+             dismissible
+             :show="!!$store.state.error"
+             @dismissed="$store.commit('error', null)">
+      {{ $store.state.error }}
+    </b-alert>
 
     <router-view/>    
   </div>
@@ -30,6 +38,7 @@ export default {
   name: 'app',
   created() {
     this.$store.dispatch('gateway_state_get');
+    this.$store.dispatch('update_serial_port_list');
   },
   methods: {
     disconnect() {

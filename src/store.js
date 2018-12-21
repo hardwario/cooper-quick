@@ -10,34 +10,63 @@ export default function getStore() {
   
   let store = new Vuex.Store({
     state: {
-      state: "disconnected",
-      device: null,
       serial_port_list: [],
-      node_list: [],
+      error: null,
+      gateway: {
+        state: "disconnected",
+        device: null,
+        nodeList: [],
+        firmwareVersion: null,
+        id: null,
+        channel: null
+      },
+      node: {
+        state: "disconnected",
+        device: null,
+        firmwareVersion: null,
+        id: null,
+        channel: null,
+        model: null
+      },
+      bussy: false
     },
+
     mutations: {
       serial_port_list(state, ports) {
         state.serial_port_list = ports;
       },
       gateway_state(state, gwstate) {
-        state.state = gwstate;
+        state.gateway.state = gwstate;
       },
-      node_list(state, list) {
-        state.node_list = list;
+      gateway_node_list(state, list) {
+        state.gateway.nodeList = list;
       },
       gateway_recv(state, payload) {
-        for (let i = 0; i < state.node_list.length; i++) {
-          let node = state.node_list[i];
+        for (let i = 0; i < state.gateway.nodeList.length; i++) {
+          let node = state.gateway.nodeList[i];
           if (node.id == payload.id) {
             payload.ts = new moment().format('MM/DD/YYYY hh:mm:ss');
             node.recv = payload;
           }
         }
       },
-      device(state, device) {
-        state.device = device;
+      error(state, message) {
+        state.error = message;
+      },
+      gateway_update(state, payload) {
+        state.gateway = Object.assign(state.gateway, payload);
+      },
+      node_update(state, payload) {
+        if (payload.state && payload.state == "disconnected") {
+          payload.firmwareVersion = null;
+          payload.id = null;
+          payload.channel = null;
+          payload.model = null
+        }
+        state.node = Object.assign(state.node, payload);
       }
     },
+
     actions: {
       update_serial_port_list() {
         console.log('action update_serial_port_list')
@@ -49,17 +78,35 @@ export default function getStore() {
       },
       gateway_connect(context, device) {
         console.log('action gateway_connect', device)
+        this.commit('gateway_update', {device});
+        this.commit('error', null);
         ipcRenderer.send('gateway/connect', device); 
-        this.commit('device', device);
       },
-      gateway_disconnect(context) {
+      gateway_disconnect() {
         console.log('action gateway_disconnect')
         ipcRenderer.send('gateway/disconnect'); 
       },
-      node_list_get() {
-        ipcRenderer.send('node/list/get');
-      }
+      gateway_node_list_get() {
+        ipcRenderer.send('gateway/node/list/get');
+      },
+      gateway_node_attach() {
+        ipcRenderer.send('gateway/node/attach');
+      },
+      gateway_node_detach(context, id) {
+        ipcRenderer.send('gateway/node/detach', id);
+      },
+      node_connect(context, device) {
+        console.log('action node_connect', device)
+        this.commit('node_update', {device});
+        this.commit('error', null);
+        ipcRenderer.send('node/connect', device); 
+      },
+      node_disconnect() {
+        console.log('action node_disconnect')
+        ipcRenderer.send('node/disconnect'); 
+      },
     },
+
     plugins: [createLogger()]
   });
 
@@ -71,18 +118,29 @@ export default function getStore() {
     store.commit('gateway_state', state);
     
     if (state == 'connected') {
-      store.dispatch('node_list_get');
+      store.dispatch('gateway_node_list_get');
     }
   });
 
-  ipcRenderer.on('node/list', (sender, list) => {
-    store.commit('node_list', list);
+  ipcRenderer.on('gateway/node/list', (sender, list) => {
+    store.commit('gateway_node_list', list);
   });
 
   ipcRenderer.on('gateway/recv', (sender, payload) => {
     store.commit('gateway_recv', payload);
   });
-  
+
+  ipcRenderer.on('error', (sender, message) => {
+    store.commit('error', message);
+  });
+
+  ipcRenderer.on('node-update', (sender, payload) => {
+    store.commit('node_update', payload);
+  });
+  ipcRenderer.on('gateway-update', (sender, payload) => {
+    store.commit('gateway_update', payload);
+  });
+
   return store;
 }
 

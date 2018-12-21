@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="home-head">
-      <div class="form-inline" id="dongleForm" v-if="$store.state.state == 'disconnected'">
+      <div class="form-inline" id="dongleForm" v-if="$store.state.gateway.state == 'disconnected'">
         <label class="mr-sm-2" for="dongleSelect">Dongle: </label>
         <b-form-select v-model="selected" :options="select_serial_port_oprions" required class="mr-sm-2" />
         <!-- <div class="form-check mb-2 mr-sm-2">
@@ -19,10 +19,10 @@
     </div>
 
     <div class="table-responsive">
-    <table class="table" v-if="$store.state.state == 'connected'">
+    <table class="table" v-if="$store.state.gateway.state == 'connected'">
       <thead>
       <tr>
-        <th>Serial number</th>
+        <th>Id</th>
         <th>Temperature</th>
         <th>Humidity </th>
         <th>CO2 </th>
@@ -40,7 +40,7 @@
       </tr>
       </thead>
       <tbody >
-      <tr v-for="node in $store.state.node_list">
+      <tr v-for="node in $store.state.gateway.nodeList">
         <td>{{node.id}}</td>
         <td>{{node.recv.temperature}} °C </td>
         <td>{{node.recv.humidity}} % </td>
@@ -75,25 +75,28 @@ export default {
   name: 'home',
   data () {
     return {
-      selected: this.$store.state.device
+      selected: this.$store.state.gateway.device
     }
   },
   components: {
     // HelloWorld
   },
   created() {
-    this.$store.dispatch('update_serial_port_list');
+    
   },
   computed: {
     select_serial_port_oprions: function () {
       let ret = [{ value: null, text: 'Choose...' }];
-      
+
+      let node_device = this.$store.state.node.state == 'connected' ? this.$store.state.node.device : null;
+
       this.$store.state.serial_port_list.forEach((item)=>{
+        if(node_device == item.comName) return;
         ret.push({text: item.comName, value: item.comName});
       });
 
       return ret;
-    }
+    },
   },
   methods: {
     connect() {
