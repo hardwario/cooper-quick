@@ -117,7 +117,7 @@ class Node extends EventEmitter {
                     this._at.command("$CHANNEL?", this._update.bind(this));
 
                 } else {
-                    this.emit("error", "This device is not cooper node.");
+                    this.emit("error", "This device is not COOPER node.");
                     this._at.disconnect();
                 }
             });

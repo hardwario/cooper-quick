@@ -3,6 +3,8 @@ import Router from 'vue-router'
 import Home from './views/Home.vue'
 import Config from './views/Config.vue'
 import Node from './views/Node.vue'
+import Datasheet from './views/Datasheet.vue'
+import Dongle from './views/Dongle.vue'
 
 Vue.use(Router)
 
@@ -16,6 +18,11 @@ export default new Router({
       component: Home
     },
     {
+      path: '/dongle',
+      name: 'dongle',
+      component: Dongle
+    },
+    {
       path: '/Node',
       name: 'node',
       component: Node
@@ -24,6 +31,11 @@ export default new Router({
       path: '/config',
       name: 'config',
       component: Config
+    },
+    {
+      path: '/datasheet',
+      name: 'Datasheet',
+      component: Datasheet
     },
     {
       path: '/about',

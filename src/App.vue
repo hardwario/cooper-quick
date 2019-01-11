@@ -5,14 +5,15 @@
     <b-navbar toggleable="md" type="dark" variant="dark">
       <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
 
-      <b-navbar-brand href="#">Cooper Quick</b-navbar-brand>
+      <b-navbar-brand href="#">COOPER Quick</b-navbar-brand>
 
       <b-collapse is-nav id="nav_collapse">
         <b-navbar-nav>
-          <b-nav-item to="/">Dongle</b-nav-item>
-          <b-nav-item to="/node">Node</b-nav-item>
+          <b-nav-item to="/">Home</b-nav-item>
+          <b-nav-item to="/dongle">Dongle</b-nav-item>
+          <b-nav-item to="/node">Device</b-nav-item>
           <b-nav-item to="/config">Config</b-nav-item>
-          <b-nav-item to="/about">About</b-nav-item>
+          <b-nav-item to="/datasheet">Datasheet</b-nav-item>
         </b-navbar-nav>
 
         <b-navbar-nav class="ml-auto">

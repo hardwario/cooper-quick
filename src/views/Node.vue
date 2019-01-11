@@ -2,7 +2,7 @@
   <div class="node">
     
     <div class="form-inline" id="dongleForm" v-if="node.state == 'disconnected'">
-      <label class="mr-sm-2" for="dongleSelect">Node: </label>
+      <label class="mr-sm-2" for="dongleSelect">Device: </label>
       <b-form-select v-model="selected" :options="select_serial_port_oprions" required class="mr-sm-2" />
       <b-button @click="connect" variant="success" >Connect</b-button>
     </div>

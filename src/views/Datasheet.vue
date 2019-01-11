@@ -1,5 +1,5 @@
 <template>
-  <div id="home">
+  <div id="datasheet">
       <pdf
         v-for="i in numPages"
         :src='src'
@@ -11,12 +11,12 @@
 
 <script>
 import pdf from 'vue-pdf'
-import data from './HARDWARIO_COOPER'
+import data from './COOPER_RF_Datasheet_1.4'
 
 const pdfData = atob(data);
 
 export default {
-  name: 'Home',
+  name: 'Datasheet',
   components: {
     pdf
   },
@@ -26,21 +26,13 @@ export default {
       numPages: 0
 		}
 	},
-  created() {
+  created(){
     console.log('created');
-    this.src.then(pdf => {  
+    this.src.then(pdf => {
 			this.numPages = pdf.numPages;
       console.log('this.src.then', pdf.numPages)
 		})
     .catch((error) => {console.log('this.src.catch', error)})
-  },
-  methods: {
-    nnn(data) {
-      console.log('nnn', data)
-    },
-    eee(data) {
-      console.log('eee', data)
-    }
   }
 }
 
@@ -48,7 +40,7 @@ export default {
 
 
 <style>
-.home {
+.datasheet {
   padding: 10px;
 }
 </style>

@@ -8,6 +8,9 @@ const { Node } = require("./node");
 const request = require('request');
 const ConfigStore = require("./ConfigStore");
 
+const clientFromConnectionString = require('azure-iot-device-http').clientFromConnectionString;
+const Message = require('azure-iot-device').Message;
+
 var settings = new ConfigStore("settings.json", {
     "language": "en",
     "ubidots_auth_token": "test"
@@ -66,38 +69,77 @@ module.exports.init = function() {
             allWindowsSend('gateway/recv', payload);
         });
 
+        // gateway.on('recv', async (payload) => {
+        //     let token = settings.get('ubidots_auth_token');
+        //     if (!token || token.length < 8) {
+        //         console.log('Bad ubidots_auth_token.');
+        //         return;
+        //     }
+
+        //     let id = payload.id;
+
+        //     delete payload.id;
+
+        //     for (var propName in payload) { 
+        //         if (payload[propName] === null || payload[propName] === undefined) {
+        //             delete payload[propName];
+        //         }
+        //     }
+
+        //     let options = {
+        //         url: 'https://industrial.api.ubidots.com/api/v1.6/devices/' + id + '/?type=cooper',
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'X-Auth-Token': token
+        //         },
+        //         json: payload,
+        //         method: "POST"
+        //       };
+
+        //     console.log('Request options:', options);
+
+        //     request(options, function (error, resp, body) {
+        //         console.log('Request: response', body);
+        //     });
+        // });
+
+
+        
+
         gateway.on('recv', async (payload) => {
-            let token = settings.get('ubidots_auth_token');
-            if (!token || token.length < 8) {
-                console.log('Bad ubidots_auth_token.');
-                return;
-            }
+            console.log("payload", payload);
+            
+            var connectionString = 'HostName=iotc-cd17e992-6b1b-4bc3-be09-306d2b87af74.azure-devices.net;DeviceId=cooper-0144504602723944;SharedAccessKey=qqWQKrEIJRpRRJcZI+rh2U+bjjxZ0mc0LluHVH/cLZU=';
+        
+            var client = clientFromConnectionString(connectionString);
 
-            let id = payload.id;
+            var connectCallback = function (err) {
+                if (err) {
+                  console.error('Could not connect: ' + err);
+                } else {
+                  console.log('Client connected');
 
-            delete payload.id;
+                    var message = new Message(JSON.stringify(payload));
+                    
 
-            for (var propName in payload) { 
-                if (payload[propName] === null || payload[propName] === undefined) {
-                    delete payload[propName];
+                    client.sendEvent(message, function (err) {
+                        if (err) {
+                            console.log(err.toString());
+                        } else {
+                            console.log("client.sendEvent callback no error");
+                        }
+                    });
+               
+                    client.on('message', function (msg) { 
+                        console.log("client.on('message'", msg); 
+                        client.complete(msg, function () {
+                            console.log('completed');
+                        });
+                    }); 
                 }
-            }
-
-            let options = {
-                url: 'https://industrial.api.ubidots.com/api/v1.6/devices/' + id + '/?type=cooper',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Auth-Token': token
-                },
-                json: payload,
-                method: "POST"
               };
 
-            console.log('Request options:', options);
-
-            request(options, function (error, resp, body) {
-                console.log('Request: response', body);
-            });
+              client.open(connectCallback);
         });
 
         gateway.connect();
