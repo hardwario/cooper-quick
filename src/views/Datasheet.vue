@@ -37,10 +37,3 @@ export default {
 }
 
 </script>
-
-
-<style>
-.datasheet {
-  padding: 10px;
-}
-</style>

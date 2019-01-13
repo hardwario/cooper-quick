@@ -45,10 +45,3 @@ export default {
 }
 
 </script>
-
-
-<style>
-.home {
-  padding: 10px;
-}
-</style>

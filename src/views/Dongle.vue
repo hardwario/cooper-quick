@@ -16,11 +16,9 @@
       <div v-if="$store.state.state == 'connection'">
       Connection ....
       </div>
+
+       <button class="btn btn-danger" v-if="$store.state.gateway.state == 'connected'" @click="disconnect">Disconnect dongle</button>
     </div>
-
-    <a href="app://./HARDWARIO-COOPER.pdf">HARDWARIO COOPER.pdf</a>
-
-    
 
     <div class="table-responsive">
     <table class="table" v-if="$store.state.gateway.state == 'connected'">
@@ -110,6 +108,9 @@ export default {
     },
     detachModalOk() {
       this.$store.dispatch('gateway_node_detach', this.detachModalId);
+    },
+    disconnect() {
+      this.$store.dispatch('gateway_disconnect');
     }
   }
 }

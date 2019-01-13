@@ -1,8 +1,9 @@
 
 <template>
-  <div id="app" class="app">
+<div id="app">
 
-    <b-navbar toggleable="md" type="dark" variant="dark">
+<!--
+    <b-navbar toggleable="md" type="dark" variant="dark" fixed="top">
       <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
 
       <b-navbar-brand href="#">COOPER Quick</b-navbar-brand>
@@ -22,16 +23,37 @@
 
       </b-collapse>
     </b-navbar>
+-->
 
-    <b-alert variant="danger"
-             dismissible
-             :show="!!$store.state.error"
-             @dismissed="$store.commit('error', null)">
-      {{ $store.state.error }}
-    </b-alert>
+  <div  class="app container-fluid">
+    <div class="row">
+    
+      <nav class="d-md-block sidebar">
+        <div class="sidebar-sticky">
+          <b-nav vertical pills >
+            <b-nav-item to="/home">Home</b-nav-item>
+            <b-nav-item to="/dongle">Dongle</b-nav-item>
+            <b-nav-item to="/node">Device</b-nav-item>
+            <b-nav-item to="/config">Config</b-nav-item>
+            <b-nav-item to="/datasheet">Datasheet</b-nav-item>
+          </b-nav>
+        </div>
+      </nav>
 
-    <router-view/>    
+      <main role="main" class="col-md-11 ml-sm-auto col-lg-11 px-4">
+        <b-alert variant="danger"
+          dismissible
+          :show="!!$store.state.error"
+          @dismissed="$store.commit('error', null)">
+            {{ $store.state.error }}
+        </b-alert>
+        
+        <router-view/>    
+      </main>
+
+    </div>
   </div>
+</div>
 </template>
 
 <script>
@@ -50,22 +72,125 @@ export default {
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
-}
-#nav {
-  padding: 30px;
+body {
+  font-size: .875rem;
 }
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
+.feather {
+  width: 16px;
+  height: 16px;
+  vertical-align: text-bottom;
 }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
+/*
+ * Sidebar
+ */
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100; /* Behind the navbar */
+  padding: 0px 0 0; /* Height of navbar */
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+  min-width: 120px;
+  background-color: #ddd;
+}
+
+.sidebar-sticky {
+  position: relative;
+  top: 0;
+  height: calc(100vh - 0px);
+  padding-top: .5rem;
+  overflow-x: hidden;
+  overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+}
+
+@supports ((position: -webkit-sticky) or (position: sticky)) {
+  .sidebar-sticky {
+    position: -webkit-sticky;
+    position: sticky;
+  }
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  color: #333;
+
+}
+
+.sidebar .nav-link .feather {
+  margin-right: 4px;
+  color: #999;
+}
+
+.sidebar .nav-item a {
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+}
+
+.sidebar .sidebar-sticky .nav-link.active {
+  background-color: #0e788a;
+  color: white;
+}
+
+.sidebar .sidebar-sticky a.nav-link:hover {
+    background-color: #fdc700;
+    text-decoration: none;
+}
+
+.sidebar .nav-link:hover .feather,
+.sidebar .nav-link.active .feather {
+  color: inherit;
+}
+
+.sidebar-heading {
+  font-size: .75rem;
+  text-transform: uppercase;
+}
+
+/*
+ * Content
+ */
+
+[role="main"] {
+  padding-top: 0px; /* Space for fixed navbar */
+}
+
+@media (min-width: 768px) {
+  [role="main"] {
+    padding-top: 0px; /* Space for fixed navbar */
+  }
+}
+
+/*
+ * Navbar
+ */
+
+.navbar-brand {
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+  font-size: 1rem;
+  background-color: rgba(0, 0, 0, .25);
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, .25);
+}
+
+.navbar .form-control {
+  padding: .75rem 1rem;
+  border-width: 0;
+  border-radius: 0;
+}
+
+.form-control-dark {
+  color: #fff;
+  background-color: rgba(255, 255, 255, .1);
+  border-color: rgba(255, 255, 255, .1);
+}
+
+.form-control-dark:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .25);
 }
 </style>
