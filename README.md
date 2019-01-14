@@ -1,20 +1,5 @@
 # cooper-quick
 
-#### install PDF to HTML
-https://github.com/coolwanglu/pdf2htmlEX
-```
-sudo apt install pdf2htmlex
-```
-or
-```
-brew install pdf2htmlEX
-```
-example:
-```
-cd public
-pdf2htmlEX HARDWARIO\ COOPER.pdf HARDWARIO\ COOPER.html
-```
-
 ## Project setup
 ```
 npm install
