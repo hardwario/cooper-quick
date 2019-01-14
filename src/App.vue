@@ -34,13 +34,15 @@
             <b-nav-item to="/home">Home</b-nav-item>
             <b-nav-item to="/dongle">Dongle</b-nav-item>
             <b-nav-item to="/node">Device</b-nav-item>
-            <b-nav-item to="/config">Config</b-nav-item>
+            <b-nav-item to="/connectors">Connectors</b-nav-item>
             <b-nav-item to="/datasheet">Datasheet</b-nav-item>
           </b-nav>
         </div>
+        {{$store.state.messages.length}}
       </nav>
 
-      <main role="main" class="col-md-11 ml-sm-auto col-lg-11 px-4">
+      <main role="main" class="">
+
         <b-alert variant="danger"
           dismissible
           :show="!!$store.state.error"
@@ -48,6 +50,12 @@
             {{ $store.state.error }}
         </b-alert>
         
+        <div v-for="message in $store.state.messages">
+          <b-alert :variant="message.type" @dismissed="removeMessage" dismissible :show="message.show">
+              {{ message.msg }}
+          </b-alert>        
+        </div>
+
         <router-view/>    
       </main>
 
@@ -66,6 +74,9 @@ export default {
   methods: {
     disconnect() {
       this.$store.dispatch('gateway_disconnect');
+    },
+    removeMessage(evt, a, b) {
+      console.log(evt, a, b)
     }
   }
 }
@@ -157,6 +168,8 @@ body {
 
 [role="main"] {
   padding-top: 0px; /* Space for fixed navbar */
+  margin-left: 120px;
+  width: 100%;
 }
 
 @media (min-width: 768px) {

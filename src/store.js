@@ -12,6 +12,9 @@ export default function getStore() {
     state: {
       serial_port_list: [],
       error: null,
+      messages: [
+        {msg: "test", type: "alert"}
+      ],
       gateway: {
         state: "disconnected",
         device: null,
@@ -64,7 +67,15 @@ export default function getStore() {
           payload.model = null
         }
         state.node = Object.assign(state.node, payload);
-      }
+      },
+      add_message(state, payload) {
+        console.log('add_message', payload);
+        payload.show = true;
+        setTimeout(()=>{
+          payload.show = false;
+        }, 2000);
+        state.messages.push(payload);
+      },
     },
 
     actions: {
@@ -104,6 +115,12 @@ export default function getStore() {
       node_disconnect() {
         console.log('action node_disconnect')
         ipcRenderer.send('node/disconnect'); 
+      },
+      add_message_success(context, msg) {
+        this.commit("add_message", {type: "success", msg});
+      },
+      add_message_error(context, msg) {
+        this.commit("add_message", {type: "danger", msg});
       },
     },
 

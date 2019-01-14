@@ -6,33 +6,43 @@ class ConfigStore {
     constructor(filename, defaults={}) {
         const userDataPath = (electron.app || electron.remote.app).getPath('userData');
 
-        this.path = path.join(userDataPath, filename);
+        this.filePath = path.join(userDataPath, filename);
 
-        console.log("ConfigStore open", this.path);
+        console.log("ConfigStore open", this.filePath);
 
-        this.data = Object.assign(defaults, parseDataFile(this.path, defaults));
+        try {
+            this.data = JSON.parse(fs.readFileSync(this.filePath), { encoding: "utf8" });
+
+            for (let section in defaults) {
+                this.data[section] = Object.assign(defaults[section], this.data[section]);
+            }
+
+        } catch(error) {
+            console.error(error);
+
+            this.data = defaults;
+        }
     }
 
-    get(key) {
-        return this.data[key];
+    get(section, key) {
+        if (key == undefined) {
+            return this.data[section];
+        }
+        return this.data[section][key];
     }
 
     getAll() {
         return this.data;
     }
 
-    set(key, val) {
-        this.data[key] = val;
+    set(section, key, val) {
+        if (key == undefined) {
+            this.data[section] = val;
+        }else {
+            this.data[section][key] = val;
+        }
 
-        fs.writeFileSync(this.path, JSON.stringify(this.data), { encoding: "utf8" });
-    }
-}
-
-function parseDataFile(filePath, defaults) {
-    try {
-        return JSON.parse(fs.readFileSync(filePath), { encoding: "utf8" });
-    } catch(error) {
-        return defaults;
+        fs.writeFileSync(this.filePath, JSON.stringify(this.data, null, '  '), { encoding: "utf8" });
     }
 }
 

@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
-import Config from './views/Config.vue'
+import Connectors from './views/Connectors.vue'
 import Node from './views/Node.vue'
 import Datasheet from './views/Datasheet.vue'
 import Dongle from './views/Dongle.vue'
@@ -28,9 +28,9 @@ export default new Router({
       component: Node
     },
     {
-      path: '/config',
-      name: 'config',
-      component: Config
+      path: '/connectors',
+      name: 'connectors',
+      component: Connectors
     },
     {
       path: '/datasheet',

@@ -38,11 +38,11 @@
         <th>Battery </th>
         <th>RSSI </th>
         <th>Time</th>
-        <th></th>
+        <th style="width:130px"></th>
       </tr>
       </thead>
       <tbody >
-      <tr v-for="node in $store.state.gateway.nodeList">
+      <tr v-for="node in $store.state.gateway.nodeList" v-key="node.id">
         <td>{{node.id}}</td>
         <td>{{node.recv.temperature}} °C </td>
         <td>{{node.recv.humidity}} % </td>
@@ -57,7 +57,11 @@
         <td>{{node.recv.voltage}} V</td>
         <td>{{node.recv.rssi}} </td>
         <td>{{node.recv.ts}}</td>
-        <td><b-button @click="detachModalId=node.id; detachModalShow=true" variant="" ><font-awesome-icon icon="times" /></b-button></td>
+        <td>
+          <b-button @click="detachModalId=node.id; detachModalShow=true" variant="" ><font-awesome-icon icon="times" /></b-button>
+          <!--&nbsp;
+          <b-button @click="detachModalId=node.id; detachModalShow=true" variant="" ><font-awesome-icon icon="cog" /></b-button>-->
+        </td>
       </tr>
       </tbody>
     </table>
