@@ -69,7 +69,6 @@ export default function getStore() {
         state.node = Object.assign(state.node, payload);
       },
       add_message(state, payload) {
-        console.log('add_message', payload);
         payload.show = true;
         setTimeout(()=>{
           payload.show = false;
@@ -80,21 +79,17 @@ export default function getStore() {
 
     actions: {
       update_serial_port_list() {
-        console.log('action update_serial_port_list')
         ipcRenderer.send('port-list/get'); 
       },
       gateway_state_get() {
-        console.log('action gateway_state_get')
         ipcRenderer.send('gateway/state/get'); 
       },
       gateway_connect(context, device) {
-        console.log('action gateway_connect', device)
         this.commit('gateway_update', {device});
         this.commit('error', null);
         ipcRenderer.send('gateway/connect', device); 
       },
       gateway_disconnect() {
-        console.log('action gateway_disconnect')
         ipcRenderer.send('gateway/disconnect'); 
       },
       gateway_node_list_get() {
@@ -107,13 +102,11 @@ export default function getStore() {
         ipcRenderer.send('gateway/node/detach', id);
       },
       node_connect(context, device) {
-        console.log('action node_connect', device)
         this.commit('node_update', {device});
         this.commit('error', null);
         ipcRenderer.send('node/connect', device); 
       },
       node_disconnect() {
-        console.log('action node_disconnect')
         ipcRenderer.send('node/disconnect'); 
       },
       add_message_success(context, msg) {

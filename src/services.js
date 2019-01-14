@@ -5,11 +5,9 @@ const { getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED
 const crypto = require('crypto');
 const { Gateway } = require("./gateway");
 const { Node } = require("./node");
-const request = require('request');
 const ConfigStore = require("./ConfigStore");
-
-const clientFromConnectionString = require('azure-iot-device-http').clientFromConnectionString;
-const Message = require('azure-iot-device').Message;
+const ubidots = require('./connectors/ubidots');
+const azureiotcentral = require('./connectors/azureiotcentral');
 
 var settings = new ConfigStore("settings.json", {
     "app": {
@@ -21,13 +19,7 @@ var settings = new ConfigStore("settings.json", {
     },
     "azureiotcentral": {
         "enable": false,
-        "devices": {},
-        "device": {
-            "scopeId": "0ne0003DC28",
-            "deviceId": "cooper-",
-            "primaryKey": "",  
-            "connectionString": ""
-        }
+        "devices": {}
     }
 });
 
@@ -91,36 +83,8 @@ module.exports.init = function() {
             }
 
             let token = settings.get('ubidots', 'auth_token');
-            if (!token || token.length < 8) {
-                console.log('Bad ubidots_auth_token.');
-                return;
-            }
 
-            let id = payload.id;
-
-            delete payload.id;
-
-            for (var propName in payload) { 
-                if (payload[propName] === null || payload[propName] === undefined) {
-                    delete payload[propName];
-                }
-            }
-
-            let options = {
-                url: 'https://industrial.api.ubidots.com/api/v1.6/devices/' + id + '/?type=cooper',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Auth-Token': token
-                },
-                json: payload,
-                method: "POST"
-              };
-
-            console.log('Request options:', options);
-
-            request(options, function (error, resp, body) {
-                console.log('Request: response', body);
-            });
+            ubidots.send(token, payload);
         });
 
         gateway.on('recv', async (payload) => {
@@ -129,44 +93,9 @@ module.exports.init = function() {
                 return;
             }
 
-            console.log("azureiotcentral payload", payload);
-
-            let device = settings.get('azureiotcentral', 'device');
-
-            if (!device || !device.connectionString || (device.connectionString.length < 10)) {
-                console.log('Bad connectionString.');
-                return;
-            }
-        
-            var client = clientFromConnectionString(device.connectionString);
-
-            var connectCallback = function (err) {
-                if (err) {
-                  console.error('Could not connect: ' + err);
-                } else {
-                  console.log('Client connected');
-
-                    var message = new Message(JSON.stringify(payload));
-                    
-
-                    client.sendEvent(message, function (err) {
-                        if (err) {
-                            console.log(err.toString());
-                        } else {
-                            console.log("client.sendEvent callback no error");
-                        }
-                    });
-               
-                    client.on('message', function (msg) { 
-                        console.log("client.on('message'", msg); 
-                        client.complete(msg, function () {
-                            console.log('completed');
-                        });
-                    }); 
-                }
-              };
-
-              client.open(connectCallback);
+            let devices = settings.get('azureiotcentral', 'devices');
+    
+            azureiotcentral.send(devices[payload.id], payload);
         });
 
         gateway.connect();
@@ -253,6 +182,17 @@ module.exports.init = function() {
         console.log("settings/set", payload);
         settings.set(payload.section, payload.key, payload.value);
         event.returnValue = true;
+    });
+
+    ipcMain.on('azureiotcentral/connectionString/get', (event, payload) => {
+        console.log('azureiotcentral/connectionString/get', payload);
+        azureiotcentral.getConnectionString(payload.scopeId, payload.deviceId, payload.primaryKey)
+        .then((connectionString)=>{
+            event.sender.send('azureiotcentral/connectionString', {deviceId: payload.deviceId, connectionString});
+        }).catch((error)=>{
+            sendError(error);
+            event.sender.send('azureiotcentral/connectionString', {deviceId: payload.deviceId});
+        });
     });
 
     ipcMain.on("node/connect", (event, device) => {

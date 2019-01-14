@@ -42,7 +42,7 @@
       </tr>
       </thead>
       <tbody >
-      <tr v-for="node in $store.state.gateway.nodeList" v-key="node.id">
+      <tr v-for="node in $store.state.gateway.nodeList">
         <td>{{node.id}}</td>
         <td>{{node.recv.temperature}} °C </td>
         <td>{{node.recv.humidity}} % </td>

@@ -3,14 +3,19 @@
 
    <h2>Azure IOT Central</h2>
     
-    <b-form @submit="onSubmitAzureiotcentral">
+    <b-form @submit="onSubmitAzureiotcentral" >
       <b-form-group id="azureiotcentralChecks">
           <b-form-checkbox v-model="azureiotcentral.enable">Enable</b-form-checkbox>
       </b-form-group>
 
       <b-form-group label-for="azureiotcentralInputScopeID"
-                    label="Scope ID:">
-        <b-form-input id="azureiotcentralInputScopeID"
+                    label="For Device:">
+      <b-form-select v-model="azureiotcentral.selected" :options="azureiotcentralDeviceOptions" @input="azureiotcentralDeviceChange" class="mb-3" />
+      </b-form-group>
+
+      <b-form-group label-for="azureiotcentralInputScopeID" 
+                    label="Scope ID:" label-size="sm">
+        <b-form-input id="azureiotcentralInputScopeID" size="sm"
                       type="text"
                       v-model="azureiotcentral.device.scopeId"
                       required
@@ -19,8 +24,8 @@
       </b-form-group>
 
       <b-form-group label-for="azureiotcentralInputDeviceId"
-                    label="Device ID:">
-        <b-form-input id="azureiotcentralInputDeviceId"
+                    label="Device ID:" label-size="sm">
+        <b-form-input id="azureiotcentralInputDeviceId" size="sm"
                       type="text"
                       v-model="azureiotcentral.device.deviceId"
                       required
@@ -28,9 +33,9 @@
         </b-form-input>
       </b-form-group>
 
-      <b-form-group label-for="azureiotcentralInputPrimaryKey"
-                    label="Primary Key:">
-        <b-form-input id="azureiotcentralInputPrimaryKey"
+      <b-form-group label-for="azureiotcentralInputPrimaryKey" 
+                    label="Primary Key:" label-size="sm">
+        <b-form-input id="azureiotcentralInputPrimaryKey" size="sm"
                       type="text"
                       v-model="azureiotcentral.device.primaryKey"
                       required
@@ -39,16 +44,19 @@
       </b-form-group>
 
         <b-form-group label-for="azureiotcentralInputConnectionString"
-                    label="Connection String:">
+                    label="Connection String:" label-size="sm">
+
+        <b-button variant="primary" size="sm" @click="azureiotcentralGetConnectionString" :disabled="azureiotcentral.wait" >Get Connection String <font-awesome-icon v-if="azureiotcentral.wait" spin icon="spinner" /></b-button>
+
         <b-form-input id="azureiotcentralInputConnectionString"
                       type="text"
                       v-model="azureiotcentral.device.connectionString"
                       required
-                      placeholder="...">
+                      placeholder="..." size="sm">
         </b-form-input>
       </b-form-group>
 
-      <b-button type="submit" variant="primary">Submit</b-button>
+      <b-button type="submit" variant="success" :disabled="azureiotcentral.wait">Save</b-button>
     </b-form>
 
     <hr />
@@ -70,7 +78,7 @@
         </b-form-input>
       </b-form-group>
 
-      <b-button type="submit" variant="primary">Submit</b-button>
+      <b-button type="submit" variant="success">Save</b-button>
     </b-form>
 
   </div>
@@ -94,11 +102,29 @@ export default {
       ubidots: config_get('ubidots'),
       azureiotcentral: {
         enable: config_get('azureiotcentral', 'enable'),
-        device: config_get('azureiotcentral', 'device')
+        devices: config_get('azureiotcentral', 'devices'),
+        device: {},
+        selected: null,
+        wait: false
       }
     }
   },
-  created() {
+  mounted() {
+    ipcRenderer.on('azureiotcentral/connectionString', function(sender, payload) {
+      console.log('azureiotcentral/connectionString', payload, this.azureiotcentral.device);
+      if (payload.deviceId == this.azureiotcentral.device.deviceId) {
+        this.$set(this.azureiotcentral.device, 'connectionString', payload.connectionString);
+        this.azureiotcentral.wait = false;
+      }
+    }.bind(this));
+  },
+  beforeDestroy() {
+    ipcRenderer.removeAllListeners('azureiotcentral/connectionString');
+  },
+  computed: {
+    azureiotcentralDeviceOptions: function(){
+      return this.$store.state.gateway.nodeList.map(node=>node.id);
+    }
   },
   methods: {
     onSubmitUbidots(evt) {
@@ -119,7 +145,21 @@ export default {
         this.$store.dispatch('add_message_error', 'Chyba při ukládání');
       }
 
-      config_set('azureiotcentral', 'device', this.azureiotcentral.device)
+      config_set('azureiotcentral', 'devices', this.azureiotcentral.devices)
+    },
+    azureiotcentralDeviceChange () {
+      if (this.azureiotcentral.selected) {
+        if (this.azureiotcentral.devices[this.azureiotcentral.selected] === undefined) {
+          this.azureiotcentral.devices[this.azureiotcentral.selected] = {
+            deviceId: "cooper-" + this.azureiotcentral.selected
+          };
+        }
+        this.azureiotcentral.device = this.azureiotcentral.devices[this.azureiotcentral.selected];
+      }
+    },
+    azureiotcentralGetConnectionString() {
+      this.azureiotcentral.wait = true;
+      ipcRenderer.send('azureiotcentral/connectionString/get', this.azureiotcentral.device);
     }
   }
 }
