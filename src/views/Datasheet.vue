@@ -1,16 +1,11 @@
 <template>
   <div id="datasheet">
-      <pdf
-        v-for="i in numPages"
-        :src='src'
-        :key="i"
-        :page="i"
-      ></pdf>
+      <pdf :data="pdfData"></pdf>
   </div>
 </template>
 
 <script>
-import pdf from 'vue-pdf'
+import pdf from '../components/pdf.vue'
 import data from './COOPER_RF_Datasheet_1.4'
 
 const pdfData = atob(data);
@@ -22,18 +17,9 @@ export default {
   },
 	data() {
 		return {
-			src: pdf.createLoadingTask({data: pdfData}),
-      numPages: 0
+			pdfData: pdfData
 		}
-	},
-  created(){
-    console.log('created');
-    this.src.then(pdf => {
-			this.numPages = pdf.numPages;
-      console.log('this.src.then', pdf.numPages)
-		})
-    .catch((error) => {console.log('this.src.catch', error)})
-  }
+	}
 }
 
 </script>

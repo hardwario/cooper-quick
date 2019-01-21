@@ -1,18 +1,23 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, Tray, Menu } from 'electron'
 import {
   createProtocol,
   installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
-const isDevelopment = process.env.NODE_ENV !== 'production'
-
+const path = require('path')
+const electronContextMenu = require('electron-context-menu')
 const services = require("./services"); 
+
+const isDevelopment = process.env.NODE_ENV !== 'production'
+const appIconPath = path.join(__static, 'icon.png');
+
 services.init();
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let win
+let win = undefined
+let tray = undefined
 
 // Standard scheme must be registered before the app is ready
 protocol.registerStandardSchemes(['app'], { secure: true })
@@ -21,10 +26,13 @@ function createWindow () {
   win = new BrowserWindow({ 
     width: 1200, 
     height: 600, 
+    minWidth: 640,
+    minHeight: 480,
+    icon: appIconPath,
     webPreferences: {
       webSecurity: false,
       allowRunningInsecureContent: true
-  } 
+    }
   })
 
   createProtocol('app');
@@ -39,12 +47,41 @@ function createWindow () {
     win.loadURL('app://./index.html')
   }
 
+  win.setTitle('COOPER Quick ' + app.getVersion());
+
   // win.webContents.openDevTools()
 
   win.on('closed', () => {
     win = null
   })
 }
+
+function createTray () {
+  var contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show',
+      click: ()=>{ win.show() }
+    },
+    {
+      label: 'Hide',
+      click: ()=>{ win.hide() }
+    },
+    { 
+      label: 'Quit',
+      accelerator: 'Command+Q',
+      selector: 'terminate:',
+      click: ()=>{ app.quit() }
+    }
+  ]);
+  
+  tray = new Tray(appIconPath)
+  tray.setContextMenu(contextMenu);  
+  // tray.on('right-click', showWindow)
+  // tray.on('double-click', showWindow)
+  // tray.on('click', showWindow)
+}
+
+electronContextMenu({});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
@@ -72,6 +109,7 @@ app.on('ready', async () => {
     await installVueDevtools()
   }
   createWindow()
+  // createTray()
 })
 
 // Exit cleanly on request from parent process in development mode.

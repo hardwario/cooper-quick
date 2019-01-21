@@ -143,9 +143,10 @@ class Gateway extends EventEmitter {
     
     _atStateChange(state) {
         if (state == STATE_CONNECTED) {
-            
+
             this._at.command("+CGMM", (command, response)=>{
-                if (response && response[0].indexOf("DONGLE") > -1) {
+
+                if (response && (response.length == 1) && response[0].indexOf("DONGLE") > -1) {
                     this._state = STATE_CONNECTED;
                     this.emit("state", this._state);
 

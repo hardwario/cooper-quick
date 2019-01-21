@@ -14,7 +14,7 @@ class ATClient extends EventEmitter {
         this._device = device;
         this._state = STATE_DISCONNECTED;
         this._comands = [];
-        this._response = null;
+        this._response = undefined;
         this._command = null;
 
         this._ser = new SerialPort(device, {
@@ -26,14 +26,16 @@ class ATClient extends EventEmitter {
         this._ser.on("open", () => {
 
             this._ser.flush(() => {
-                this._write('\x1b');
-                
-                this._timeout = setTimeout(()=>{
-                    this.emit("error", "There is no answer from the device. Please, make sure the device is the Radio Dongle and has the correct firmware.");
-                    this.disconnect();
-                }, 5000);
+                this._write_drain('\x1b', ()=>{
+                    this._timeout = setTimeout(()=>{
+                        this.emit("error", "There is no answer from the device. Please, make sure the device is the Radio Dongle and has the correct firmware.");
+                        this.disconnect();
+                    }, 5000);
+    
+                    this._write("AT");
 
-                this._write("AT");
+                });
+                
             });
         });
 
@@ -45,8 +47,8 @@ class ATClient extends EventEmitter {
             this.emit("error", e);
         });
 
-        const parser = this._ser.pipe(new SerialPort.parsers.Readline({ delimiter: "\r\n" }));
-        parser.on("data", this._onReadline.bind(this));
+        this._parser = this._ser.pipe(new SerialPort.parsers.Readline({ delimiter: "\r\n" }));
+        this._parser.on("data", this._onReadline.bind(this));
     }
 
     connect() {
@@ -128,10 +130,25 @@ class ATClient extends EventEmitter {
         this._ser.write(line + '\r\n', callback);
     }
 
+    _write_drain(line, callback=undefined) {
+        console.log("ATClient write drain:", line);
+        this._ser.write(line + '\r\n', ()=>{
+            this._ser.drain(callback);
+        });
+    }
+
     _onReadline(line) {
         console.log("ATClient read:", line);
 
         if (line.length == 0) return;
+
+        if (line.charCodeAt(0) == 0) {
+            let i = 1;
+            for (; i < line.length; ++i) {
+                if (line.charCodeAt(i) != 0) break;
+            }
+            line = line.substring(i);
+        }
 
         if (this._state == STATE_CONNECTION) {
             if (line.replace(/[\n\r]/g, '') == 'OK') {
@@ -146,6 +163,10 @@ class ATClient extends EventEmitter {
                 this.emit("state", this._state);
             } else {
                 console.log(">" + line + "<");
+                for (var i = 0; i < line.length; ++i) {
+                    var code = line.charCodeAt(i);
+                    console.log(i, code);
+                }
             }
 
             return;

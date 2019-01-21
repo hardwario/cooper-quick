@@ -42,7 +42,7 @@
       </tr>
       </thead>
       <tbody >
-      <tr v-for="node in $store.state.gateway.nodeList">
+      <tr v-for="node in $store.state.gateway.nodeList" :key="node.id">
         <td>{{node.id}}</td>
         <td>{{node.recv.temperature}} °C </td>
         <td>{{node.recv.humidity}} % </td>
@@ -98,7 +98,11 @@ export default {
 
       this.$store.state.serial_port_list.forEach((item)=>{
         if(node_device == item.comName) return;
-        ret.push({text: item.comName, value: item.comName});
+        let text = item.comName;
+        if (item.serialNumber && (item.serialNumber.indexOf('cooper') > -1)) {
+          text += ' ' + item.serialNumber;
+        }
+        ret.push({text: text, value: {serialNumber: item.serialNumber, comName: item.comName }});
       });
 
       return ret;
@@ -106,7 +110,7 @@ export default {
   },
   methods: {
     connect() {
-      if (this.selected && this.selected.length) {
+      if (this.selected &&  this.selected.comName && this.selected.comName.length) {
         this.$store.dispatch('gateway_connect', this.selected);
       }
     },

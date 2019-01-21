@@ -32,13 +32,14 @@
         <div class="sidebar-sticky">
           <b-nav vertical pills >
             <b-nav-item to="/home">Home</b-nav-item>
-            <b-nav-item to="/dongle">Dongle</b-nav-item>
+            <b-nav-item to="/dongle">Dongle<font-awesome-icon v-if="$store.state.gateway.state == 'disconnected'" icon="exclamation-triangle"/></b-nav-item>
             <b-nav-item to="/node">Device</b-nav-item>
             <b-nav-item to="/connectors">Connectors</b-nav-item>
             <b-nav-item to="/datasheet">Datasheet</b-nav-item>
           </b-nav>
+
+          <img  src="/logo.webp" class="logo" @click="openHardwarioCom" />
         </div>
-        {{$store.state.messages.length}}
       </nav>
 
       <main role="main" class="">
@@ -50,7 +51,7 @@
             {{ $store.state.error }}
         </b-alert>
         
-        <div v-for="message in $store.state.messages">
+        <div v-for="message in $store.state.messages" :key="message.key">
           <b-alert :variant="message.type" @dismissed="removeMessage" dismissible :show="message.show">
               {{ message.msg }}
           </b-alert>        
@@ -65,11 +66,16 @@
 </template>
 
 <script>
+const { shell } = require("electron");
+
 export default {
   name: 'app',
   created() {
     this.$store.dispatch('gateway_state_get');
     this.$store.dispatch('update_serial_port_list');
+  },
+  mounted() {
+    this.$store.dispatch('app_mounted');
   },
   methods: {
     disconnect() {
@@ -77,6 +83,9 @@ export default {
     },
     removeMessage(evt, a, b) {
       console.log(evt, a, b)
+    },
+    openHardwarioCom() {
+        shell.openExternal("https://www.hardwario.com/");
     }
   }
 }
@@ -113,7 +122,7 @@ body {
   position: relative;
   top: 0;
   height: calc(100vh - 0px);
-  padding-top: .5rem;
+  padding-top: 0;
   overflow-x: hidden;
   overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
@@ -140,6 +149,8 @@ body {
   -webkit-border-radius: 0;
   -moz-border-radius: 0;
   border-radius: 0;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 .sidebar .sidebar-sticky .nav-link.active {
@@ -162,14 +173,32 @@ body {
   text-transform: uppercase;
 }
 
+.sidebar .sidebar-sticky a svg{
+  color: #e40328;
+  float: right;
+  margin-top: 3px;
+}
+
+.sidebar .sidebar-sticky img.logo {
+  width: 100px;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+.sidebar .sidebar-sticky img.logo:hover {
+  cursor: pointer;
+}
+
 /*
  * Content
  */
 
 [role="main"] {
   padding-top: 0px; /* Space for fixed navbar */
-  margin-left: 120px;
+  padding-left: 120px;
   width: 100%;
+  position: relative;
 }
 
 @media (min-width: 768px) {

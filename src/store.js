@@ -5,6 +5,7 @@ import { ipcRenderer } from 'electron'
 import moment from 'moment'
 
 Vue.use(Vuex);
+var uniqueKey = 0;
 
 export default function getStore() {
   
@@ -70,6 +71,7 @@ export default function getStore() {
       },
       add_message(state, payload) {
         payload.show = true;
+        payload.key = uniqueKey++;
         setTimeout(()=>{
           payload.show = false;
         }, 2000);
@@ -115,6 +117,9 @@ export default function getStore() {
       add_message_error(context, msg) {
         this.commit("add_message", {type: "danger", msg});
       },
+      app_mounted(){
+        ipcRenderer.send('app/mounted');
+      }
     },
 
     plugins: [createLogger()]
@@ -140,8 +145,12 @@ export default function getStore() {
     store.commit('gateway_recv', payload);
   });
 
-  ipcRenderer.on('error', (sender, message) => {
-    store.commit('error', message);
+  ipcRenderer.on('error', (sender, msg) => {
+    store.commit("add_message", {type: "danger", msg});
+  });
+
+  ipcRenderer.on('success', (sender, msg) => {
+    store.commit("add_message", {type: "success", msg});
   });
 
   ipcRenderer.on('node-update', (sender, payload) => {

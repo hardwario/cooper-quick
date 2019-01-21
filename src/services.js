@@ -13,6 +13,9 @@ var settings = new ConfigStore("settings.json", {
     "app": {
         "language": "en",
     },
+    "dongle": {
+        "serialNumber": null
+    },
     "ubidots": {
         "enable": false,
         "auth_token": ""
@@ -25,84 +28,103 @@ var settings = new ConfigStore("settings.json", {
 
 var gateway = null;
 var node = null;
+var portListTimer = null;
 
 function portListhandler() {
     getSerialPortList((ports)=>{
 
         allWindowsSend("port-list", ports);
 
-        setTimeout(portListhandler, 2000);
+        portListTimer = setTimeout(portListhandler, 2000);
+
+        if (gateway === null) {
+            let serialNumber = settings.get('dongle', 'serialNumber');
+
+            for (let i=0, l=ports.length; i < l; i++) {
+                if (ports[i].serialNumber == serialNumber) {
+                    let device = {comName: ports[i].comName, serialNumber: ports[i].serialNumber };
+                    gatewayConnect(device);
+                    allWindowsSend('gateway-update', {device: device});
+                }
+            }
+        }
     });
 }
 
+function gatewayConnect(device) {
+    if (gateway) {
+        if (device.comName == gateway.getDevice()) {
+            if (gateway.getState() == STATE_DISCONNECTED) {
+                gateway.connect();
+            }
+            return;
+        }
+    }
+    gateway = new Gateway(device.comName);
+    gateway.on('state', (state) => {
+        console.log("Gateway state:", state);
+        if (state == STATE_CONNECTED) {
+            settings.set('dongle', 'serialNumber', device.serialNumber);
+        }
+        allWindowsSend('gateway/state', state);
+    });
+    gateway.on('error', (message) => {
+        console.log("Gateway error:", message);
+        allWindowsSend('error', message);
+    });
+
+    gateway.on('update', (payload) => {
+        console.log("Gateway update:", payload);
+        allWindowsSend('gateway-update', payload);
+    });
+
+    gateway.on('recv', (payload) => {
+        allWindowsSend('gateway/recv', payload);
+    });
+
+    gateway.on('recv', async (payload) => {
+
+        if (!settings.get('ubidots', 'enable')) {
+            return;
+        }
+
+        let token = settings.get('ubidots', 'auth_token');
+
+        ubidots.send(token, payload);
+    });
+
+    gateway.on('recv', async (payload) => {
+
+        if (!settings.get('azureiotcentral', 'enable')) {
+            return;
+        }
+
+        let devices = settings.get('azureiotcentral', 'devices');
+
+        azureiotcentral.send(devices[payload.id], payload);
+    });
+
+    gateway.connect();
+}
+
 module.exports.init = function() {
-
-    portListhandler();
-
-    // ipcMain.on("port-list/get", (event, data) => {    
-    // });
-
     function sendError(message) {
         allWindowsSend('error', message);
     }
 
+    ipcMain.on("app/mounted", (event)=>{
+        if (!portListTimer) portListhandler();
+    });
+
     ipcMain.on("gateway/connect", (event, device) => {
         console.log("On gateway/connect", device);
-
-        if (gateway) {
-            if (device == gateway.getDevice()) {
-                if (gateway.getState() == STATE_DISCONNECTED) {
-                    gateway.connect();
-                }
-                return;
-            }
-        }
-        gateway = new Gateway(device);
-        gateway.on('state', (state) => {
-            console.log("Gateway state:", state);
-            allWindowsSend('gateway/state', state);
-        });
-        gateway.on('error', (message) => {
-            console.log("Gateway error:", message);
-            allWindowsSend('error', message);
-        });
-
-        gateway.on('update', (payload) => {
-            console.log("Gateway update:", payload);
-            allWindowsSend('gateway-update', payload);
-        });
-
-        gateway.on('recv', (payload) => {
-            allWindowsSend('gateway/recv', payload);
-        });
-
-        gateway.on('recv', async (payload) => {
-
-            if (!settings.get('ubidots', 'enable')) {
-                return;
-            }
-
-            let token = settings.get('ubidots', 'auth_token');
-
-            ubidots.send(token, payload);
-        });
-
-        gateway.on('recv', async (payload) => {
-
-            if (!settings.get('azureiotcentral', 'enable')) {
-                return;
-            }
-
-            let devices = settings.get('azureiotcentral', 'devices');
-    
-            azureiotcentral.send(devices[payload.id], payload);
-        });
-
-        gateway.connect();
+        gatewayConnect(device);
     });
 
     ipcMain.on("gateway/disconnect", (event) => {
         console.log("On gateway/disconnect");
+        settings.set('dongle', 'serialNumber', null);
+        if (!gateway) return;
         gateway.disconnect();
     });
 
@@ -125,6 +147,7 @@ module.exports.init = function() {
         gateway.nodeDetach(id)
             .then(()=>{
                 sendGatewayNodeList(event);
+                event.sender.send("success", "The device was successfully detached from Dongle.");
             })
             .catch(sendError);
     });
@@ -162,6 +185,7 @@ module.exports.init = function() {
             })
             .then(()=>{
                 console.log('Done gateway/node/attach');
+                event.sender.send("success", "The device was successfully attached to Dongle.");
             })
             .catch(sendError);        
     });

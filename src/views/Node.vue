@@ -12,7 +12,7 @@
     </div>
 
     <div v-if="node.state == 'connected'">
-      <button class="btn btn-warning"  @click="disconnect">Disconnect</button>
+      <button class="btn btn-warning"  @click="disconnect">Disconnect from {{selected}}</button>
     </div>
 
     <br/>
@@ -28,13 +28,13 @@
     </template>
     <hr class="my-4">
     <p></p>
-    <div v-if="isGatewayConnected && node.id">
-      <b-button variant="success"  v-if="!inGatewayNodeList" @click="attach">Attach node</b-button>
-      <b-button variant="danger" v-if="inGatewayNodeList" @click="detach">Detach node</b-button>
+    <div >
+      <b-button variant="success" v-if="!inGatewayNodeList" @click="attach" :disabled="buttonDisabled" :title="buttonTitle">Attaches this device to the dongle</b-button>
+      <b-button variant="danger" v-if="inGatewayNodeList" @click="detach" :disabled="buttonDisabled" :title="buttonTitle">Detach this device from the dongle</b-button>
     </div>
   </b-jumbotron>
 
-    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this node?">
+    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this Device?">
       Id: {{node.id}}
     </b-modal>
 
@@ -43,8 +43,6 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron';
-
 export default {
   name: 'node',
   data () {
@@ -63,11 +61,15 @@ export default {
     select_serial_port_oprions: function () {
       let ret = [{ value: null, text: 'Choose...' }];
 
-      let gateway_device = this.isGatewayConnected ? this.$store.state.gateway.device : null;
+      let gateway_device = this.isGatewayConnected && this.$store.state.gateway.device ? this.$store.state.gateway.device.comName : null;
 
       this.$store.state.serial_port_list.forEach((item)=>{
         if (gateway_device == item.comName) return;
-        ret.push({text: item.comName, value: item.comName});
+        let text = item.comName;
+        if (item.serialNumber && (item.serialNumber.indexOf('cooper') > -1)) {
+          text += ' ' + item.serialNumber;
+        }
+        ret.push({text: text , value: item.comName});
       });
 
       return ret;
@@ -78,6 +80,15 @@ export default {
         if (list[i].id == this.node.id) return true;
       }
       return false;
+    },
+    buttonDisabled(){
+      return !this.isGatewayConnected || !this.node.id;
+    },
+    buttonTitle(){
+      if (!this.isGatewayConnected) {
+        return "Not work because Dongle is not connected!";
+      }
+      return null;
     }
   },
   methods: {
@@ -106,4 +117,5 @@ export default {
 .node {
   padding: 10px;
 }
+
 </style>
