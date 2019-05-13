@@ -42,25 +42,25 @@
       </tr>
       </thead>
       <tbody >
-      <tr v-for="node in $store.state.gateway.nodeList">
-        <td>{{node.id}}</td>
-        <td>{{node.recv.temperature}} °C </td>
-        <td>{{node.recv.humidity}} % </td>
-        <td>{{node.recv['co2-conc']}} ppm </td>
-        <td>{{node.recv.illuminance}} lux </td>
-        <td>{{node.recv.pressure}} Pa </td>
-        <td>{{node.recv['voc-conc']}} ppm </td>
-        <td>{{node.recv.orientation}} </td>
-        <td>{{node.recv['press-count']}} </td>
-        <td>{{node.recv['sound-level']}} </td>
-        <td>{{node.recv['motion-count']}} </td>
-        <td>{{node.recv.voltage}} V</td>
-        <td>{{node.recv.rssi}} </td>
-        <td>{{node.recv.ts}}</td>
+      <tr v-for="sensor in $store.state.gateway.sensorList">
+        <td>{{sensor.id}}</td>
+        <td>{{sensor.recv.temperature}} °C </td>
+        <td>{{sensor.recv.humidity}} % </td>
+        <td>{{sensor.recv['co2-conc']}} ppm </td>
+        <td>{{sensor.recv.illuminance}} lux </td>
+        <td>{{sensor.recv.pressure}} Pa </td>
+        <td>{{sensor.recv['voc-conc']}} ppm </td>
+        <td>{{sensor.recv.orientation}} </td>
+        <td>{{sensor.recv['press-count']}} </td>
+        <td>{{sensor.recv['sound-level']}} </td>
+        <td>{{sensor.recv['motion-count']}} </td>
+        <td>{{sensor.recv.voltage}} V</td>
+        <td>{{sensor.recv.rssi}} </td>
+        <td>{{sensor.recv.ts}}</td>
         <td>
-          <b-button @click="detachModalId=node.id; detachModalShow=true" variant="" ><font-awesome-icon icon="times" /></b-button>
+          <b-button @click="detachModalId=sensor.id; detachModalShow=true" variant="" ><font-awesome-icon icon="times" /></b-button>
           <!--&nbsp;
-          <b-button @click="detachModalId=node.id; detachModalShow=true" variant="" ><font-awesome-icon icon="cog" /></b-button>-->
+          <b-button @click="detachModalId=sensor.id; detachModalShow=true" variant="" ><font-awesome-icon icon="cog" /></b-button>-->
         </td>
       </tr>
       </tbody>
@@ -68,7 +68,7 @@
     </div>
 
 
-    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this node?">
+    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this Sensor?">
       Id: {{detachModalId}}
     </b-modal>
 
@@ -94,10 +94,10 @@ export default {
     select_serial_port_oprions: function () {
       let ret = [{ value: null, text: 'Choose...' }];
 
-      let node_device = this.$store.state.node.state == 'connected' ? this.$store.state.node.device : null;
+      let sensor_device = this.$store.state.sensor.state == 'connected' ? this.$store.state.sensor.device : null;
 
       this.$store.state.serial_port_list.forEach((item)=>{
-        if(node_device == item.comName) return;
+        if(sensor_device == item.comName) return;
         ret.push({text: item.comName, value: item.comName});
       });
 
@@ -111,7 +111,7 @@ export default {
       }
     },
     detachModalOk() {
-      this.$store.dispatch('gateway_node_detach', this.detachModalId);
+      this.$store.dispatch('gateway_sensor_detach', this.detachModalId);
     },
     disconnect() {
       this.$store.dispatch('gateway_disconnect');

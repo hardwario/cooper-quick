@@ -4,7 +4,7 @@ const { app, ipcMain, BrowserWindow } = require("electron");
 const { getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED} = require("./atclient");
 const crypto = require('crypto');
 const { Gateway } = require("./gateway");
-const { Node } = require("./node");
+const { Sensor } = require("./sensor");
 const ConfigStore = require("./ConfigStore");
 const ubidots = require('./connectors/ubidots');
 const azureiotcentral = require('./connectors/azureiotcentral');
@@ -24,7 +24,7 @@ var settings = new ConfigStore("settings.json", {
 });
 
 var gateway = null;
-var node = null;
+var sensor = null;
 
 function portListhandler() {
     getSerialPortList((ports)=>{
@@ -110,47 +110,47 @@ module.exports.init = function() {
         event.sender.send("gateway/state", gateway == null ? STATE_DISCONNECTED : gateway.getState() );
     });
 
-    function sendGatewayNodeList(event){
-        return gateway.getNodeList().then((list)=>{
-            event.sender.send("gateway/node/list", list);
+    function sendGatewaySensorList(event){
+        return gateway.getSensorList().then((list)=>{
+            event.sender.send("gateway/sensor/list", list);
         });
     }
 
-    ipcMain.on('gateway/node/list/get', (event) => {
-        sendGatewayNodeList(event);
+    ipcMain.on('gateway/sensor/list/get', (event) => {
+        sendGatewaySensorList(event);
     });
 
-    ipcMain.on('gateway/node/detach', (event, id) => {
-        console.log("ON gateway/node/detach", id);
-        gateway.nodeDetach(id)
+    ipcMain.on('gateway/sensor/detach', (event, id) => {
+        console.log("ON gateway/sensor/detach", id);
+        gateway.sensorDetach(id)
             .then(()=>{
-                sendGatewayNodeList(event);
+                sendGatewaySensorList(event);
             })
             .catch(sendError);
     });
 
-    ipcMain.on('gateway/node/attach', (event) => {
-        console.log("ON gateway/node/attach");
+    ipcMain.on('gateway/sensor/attach', (event) => {
+        console.log("ON gateway/sensor/attach");
         if (!gateway || (gateway.getState() != STATE_CONNECTED)){
             return event.sender.send("error", "Dongle is not connected.");
         }
-        if (!node || (node.getState() != STATE_CONNECTED)){
-            return event.sender.send("error", "Node is not connected.");
+        if (!sensor || (sensor.getState() != STATE_CONNECTED)){
+            return event.sender.send("error", "Sensor is not connected.");
         }
 
         let key = crypto.randomBytes(16).toString('hex').toLowerCase();
         
         console.log("Key " + key);
 
-        node.setKey(key)
+        sensor.setKey(key)
             .then(()=>{
-                return node.setChannel(gateway.channel);
+                return sensor.setChannel(gateway.channel);
             })
             .then(()=>{
-                return gateway.nodeAttach(node.id, key);
+                return gateway.sensorAttach(sensor.id, key);
             })
             .then(()=>{
-                return sendGatewayNodeList(event);
+                return sendGatewaySensorList(event);
             })
             .then(()=>{
                 return new Promise((resolve, reject)=>{
@@ -158,10 +158,10 @@ module.exports.init = function() {
                 });
             })
             .then(()=>{
-                return node.send();
+                return sensor.send();
             })
             .then(()=>{
-                console.log('Done gateway/node/attach');
+                console.log('Done gateway/sensor/attach');
             })
             .catch(sendError);        
     });
@@ -195,41 +195,41 @@ module.exports.init = function() {
         });
     });
 
-    ipcMain.on("node/connect", (event, device) => {
-        console.log("On node/connect", device);
+    ipcMain.on("sensor/connect", (event, device) => {
+        console.log("On sensor/connect", device);
 
-        if (node) {
-            if (node == node.getDevice()) {
-                if (node.getState() == STATE_DISCONNECTED) {
-                    node.connect();
+        if (sensor) {
+            if (sensor == sensor.getDevice()) {
+                if (sensor.getState() == STATE_DISCONNECTED) {
+                    sensor.connect();
                 }
                 return;
             }
         }
-        node = new Node(device);
-        node.on('state', (state) => {
-            console.log("Node state:", state);
-            event.sender.send('node-update', {state});
+        sensor = new Sensor(device);
+        sensor.on('state', (state) => {
+            console.log("Sensor state:", state);
+            event.sender.send('sensor-update', {state});
         });
-        node.on('error', (message) => {
-            console.log("Node error:", message);
+        sensor.on('error', (message) => {
+            console.log("Sensor error:", message);
             event.sender.send('error', message);
         });
-        node.on('update', (payload) => {
-            console.log("Node update:", payload);
-            event.sender.send('node-update', payload);
+        sensor.on('update', (payload) => {
+            console.log("Sensor update:", payload);
+            event.sender.send('sensor-update', payload);
         });
 
-        node.connect();
+        sensor.connect();
     });
 
-    ipcMain.on("node/disconnect", (event) => {
-        console.log("on node:disconnect");
-        node.disconnect();
+    ipcMain.on("sensor/disconnect", (event) => {
+        console.log("on sensor:disconnect");
+        sensor.disconnect();
     });
 
-    ipcMain.on('node/state/get', (event) => {
-        event.sender.send("node/state", node == null ? STATE_DISCONNECTED : node.getState() );
+    ipcMain.on('sensor/state/get', (event) => {
+        event.sender.send("sensor/state", sensor == null ? STATE_DISCONNECTED : sensor.getState() );
     });
 
 };

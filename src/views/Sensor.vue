@@ -1,17 +1,17 @@
 <template>
-  <div class="node">
+  <div class="sensor">
     
-    <div class="form-inline" id="dongleForm" v-if="node.state == 'disconnected'">
+    <div class="form-inline" id="dongleForm" v-if="sensor.state == 'disconnected'">
       <label class="mr-sm-2" for="dongleSelect">Device: </label>
       <b-form-select v-model="selected" :options="select_serial_port_oprions" required class="mr-sm-2" />
       <b-button @click="connect" variant="success" >Connect</b-button>
     </div>
 
-    <div v-if="node.state == 'connection'">
+    <div v-if="sensor.state == 'connection'">
     Connection ....
     </div>
 
-    <div v-if="node.state == 'connected'">
+    <div v-if="sensor.state == 'connected'">
       <button class="btn btn-warning"  @click="disconnect">Disconnect</button>
     </div>
 
@@ -19,23 +19,23 @@
 
     <b-jumbotron>
     <template slot="header">
-      {{node.model || '???'}}
+      {{sensor.model || '???'}}
     </template>
     <template slot="lead">
-      Id: {{node.id}}<br/>
-      Firmware version: {{node.firmwareVersion}}<br/>
-      Channel: {{node.channel}}<br/>
+      Id: {{sensor.id}}<br/>
+      Firmware version: {{sensor.firmwareVersion}}<br/>
+      Channel: {{sensor.channel}}<br/>
     </template>
     <hr class="my-4">
     <p></p>
-    <div v-if="isGatewayConnected && node.id">
-      <b-button variant="success"  v-if="!inGatewayNodeList" @click="attach">Attach node</b-button>
-      <b-button variant="danger" v-if="inGatewayNodeList" @click="detach">Detach node</b-button>
+    <div v-if="isGatewayConnected && sensor.id">
+      <b-button variant="success"  v-if="!inGatewaySensorList" @click="attach">Attach Sensor</b-button>
+      <b-button variant="danger" v-if="inGatewaySensorList" @click="detach">Detach Sensor</b-button>
     </div>
   </b-jumbotron>
 
-    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this node?">
-      Id: {{node.id}}
+    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this Sensor?">
+      Id: {{sensor.id}}
     </b-modal>
 
   </div>
@@ -43,14 +43,14 @@
 </template>
 
 <script>
-import { ipcRenderer } from 'electron';
+// import { ipcRenderer } from 'electron';
 
 export default {
-  name: 'node',
+  name: 'Sensor',
   data () {
     return {
-      selected: this.$store.state.node.device,
-      node: this.$store.state.node,
+      selected: this.$store.state.sensor.device,
+      sensor: this.$store.state.sensor,
       detachModalShow: false
     }
   },
@@ -72,10 +72,10 @@ export default {
 
       return ret;
     },
-    inGatewayNodeList(){
-      let list = this.$store.state.gateway.nodeList;
+    inGatewaySensorList(){
+      let list = this.$store.state.gateway.sensorList;
       for(let i=0,l=list.length;i<l;i++){
-        if (list[i].id == this.node.id) return true;
+        if (list[i].id == this.sensor.id) return true;
       }
       return false;
     }
@@ -83,27 +83,27 @@ export default {
   methods: {
     connect() {
       if (this.selected && this.selected.length) {
-        this.$store.dispatch('node_connect', this.selected);
+        this.$store.dispatch('sensor_connect', this.selected);
       }
     },
     disconnect() {
-      this.$store.dispatch('node_disconnect');
+      this.$store.dispatch('sensor_disconnect');
     },
     attach() {
-      this.$store.dispatch('gateway_node_attach');
+      this.$store.dispatch('gateway_sensor_attach');
     },
     detach() {
       this.detachModalShow = true;
     },
     detachModalOk() {
-      this.$store.dispatch('gateway_node_detach', this.node.id);
+      this.$store.dispatch('gateway_sensor_detach', this.sensor.id);
     }
   }
 }
 </script>
 
 <style>
-.node {
+.sensor {
   padding: 10px;
 }
 </style>

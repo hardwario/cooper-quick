@@ -12,7 +12,7 @@
         <b-navbar-nav>
           <b-nav-item to="/">Home</b-nav-item>
           <b-nav-item to="/dongle">Dongle</b-nav-item>
-          <b-nav-item to="/node">Device</b-nav-item>
+          <b-nav-item to="/sensor">Device</b-nav-item>
           <b-nav-item to="/config">Config</b-nav-item>
           <b-nav-item to="/datasheet">Datasheet</b-nav-item>
         </b-navbar-nav>
@@ -33,7 +33,7 @@
           <b-nav vertical pills >
             <b-nav-item to="/home">Home</b-nav-item>
             <b-nav-item to="/dongle">Dongle</b-nav-item>
-            <b-nav-item to="/node">Device</b-nav-item>
+            <b-nav-item to="/sensor">Sensor</b-nav-item>
             <b-nav-item to="/connectors">Connectors</b-nav-item>
             <b-nav-item to="/datasheet">Datasheet</b-nav-item>
           </b-nav>

@@ -33,8 +33,8 @@ class Gateway extends EventEmitter {
             this.emit('error', msg)
         });
         
-        this.nodeDetach = this.nodeDetach.bind(this);
-        this.nodeAttach = this.nodeAttach.bind(this);
+        this.sensorDetach = this.sensorDetach.bind(this);
+        this.sensorAttach = this.sensorAttach.bind(this);
         this.setChannel = this.setChannel.bind(this);
         this._storeConfig = this._storeConfig.bind(this);
     }
@@ -59,11 +59,11 @@ class Gateway extends EventEmitter {
         this._at.command(command, callback, timeout);
     }
 
-    getNodeList() {
+    getSensorList() {
         return new Promise((resolve, reject)=>{
             this._at.command('$LIST', (cmd, rows) => { 
                 if (rows === null) {
-                    return reject("Error reading node list.");
+                    return reject("Error reading Sensor list.");
                 }else {
                     resolve( rows.map((row)=>{
                             let split = row.split(',');
@@ -75,7 +75,7 @@ class Gateway extends EventEmitter {
         });
     }
 
-    nodeDetach(id){
+    sensorDetach(id){
         return new Promise((resolve, reject)=>{
             this._at.commandp('$DETACH=' + id)
                 .then(this._storeConfig)
@@ -84,7 +84,7 @@ class Gateway extends EventEmitter {
         });
     }
 
-    nodeAttach(id, key){
+    sensorAttach(id, key){
         return new Promise((resolve, reject)=>{
             if (key.length != 32){
                 return reject("Key has bad length");

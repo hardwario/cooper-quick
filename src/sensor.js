@@ -3,7 +3,7 @@
 const EventEmitter = require('events');
 const { ATClient, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED } = require("./atclient");
 
-class Node extends EventEmitter {
+class Sensor extends EventEmitter {
     constructor(device) {
         super();
 
@@ -117,7 +117,7 @@ class Node extends EventEmitter {
                     this._at.command("$CHANNEL?", this._update.bind(this));
 
                 } else {
-                    this.emit("error", "This device is not COOPER node.");
+                    this.emit("error", "This device is not COOPER Sensor.");
                     this._at.disconnect();
                 }
             });
@@ -130,9 +130,9 @@ class Node extends EventEmitter {
     }
 
     _atURC(line) {
-        console.log("Node urc:", line);
+        console.log("Sensor urc:", line);
     }
 }
 
 
-module.exports = { Node, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED }
+module.exports = { Sensor, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED }

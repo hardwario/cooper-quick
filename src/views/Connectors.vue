@@ -123,7 +123,7 @@ export default {
   },
   computed: {
     azureiotcentralDeviceOptions: function(){
-      return this.$store.state.gateway.nodeList.map(node=>node.id);
+      return this.$store.state.gateway.sensorList.map(sensor=>sensor.id);
     }
   },
   methods: {

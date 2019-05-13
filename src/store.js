@@ -18,12 +18,12 @@ export default function getStore() {
       gateway: {
         state: "disconnected",
         device: null,
-        nodeList: [],
+        sensorList: [],
         firmwareVersion: null,
         id: null,
         channel: null
       },
-      node: {
+      sensor: {
         state: "disconnected",
         device: null,
         firmwareVersion: null,
@@ -41,15 +41,15 @@ export default function getStore() {
       gateway_state(state, gwstate) {
         state.gateway.state = gwstate;
       },
-      gateway_node_list(state, list) {
-        state.gateway.nodeList = list;
+      gateway_sensor_list(state, list) {
+        state.gateway.sensorList = list;
       },
       gateway_recv(state, payload) {
-        for (let i = 0; i < state.gateway.nodeList.length; i++) {
-          let node = state.gateway.nodeList[i];
-          if (node.id == payload.id) {
+        for (let i = 0; i < state.gateway.sensorList.length; i++) {
+          let sensor = state.gateway.sensorList[i];
+          if (sensor.id == payload.id) {
             payload.ts = new moment().format('MM/DD/YYYY hh:mm:ss');
-            node.recv = payload;
+            sensor.recv = payload;
           }
         }
       },
@@ -59,14 +59,14 @@ export default function getStore() {
       gateway_update(state, payload) {
         state.gateway = Object.assign(state.gateway, payload);
       },
-      node_update(state, payload) {
+      sensor_update(state, payload) {
         if (payload.state && payload.state == "disconnected") {
           payload.firmwareVersion = null;
           payload.id = null;
           payload.channel = null;
           payload.model = null
         }
-        state.node = Object.assign(state.node, payload);
+        state.sensor = Object.assign(state.sensor, payload);
       },
       add_message(state, payload) {
         payload.show = true;
@@ -92,22 +92,22 @@ export default function getStore() {
       gateway_disconnect() {
         ipcRenderer.send('gateway/disconnect'); 
       },
-      gateway_node_list_get() {
-        ipcRenderer.send('gateway/node/list/get');
+      gateway_sensor_list_get() {
+        ipcRenderer.send('gateway/sensor/list/get');
       },
-      gateway_node_attach() {
-        ipcRenderer.send('gateway/node/attach');
+      gateway_sensor_attach() {
+        ipcRenderer.send('gateway/sensor/attach');
       },
-      gateway_node_detach(context, id) {
-        ipcRenderer.send('gateway/node/detach', id);
+      gateway_sensor_detach(context, id) {
+        ipcRenderer.send('gateway/sensor/detach', id);
       },
-      node_connect(context, device) {
-        this.commit('node_update', {device});
+      sensor_connect(context, device) {
+        this.commit('sensor_update', {device});
         this.commit('error', null);
-        ipcRenderer.send('node/connect', device); 
+        ipcRenderer.send('sensor/connect', device); 
       },
-      node_disconnect() {
-        ipcRenderer.send('node/disconnect'); 
+      sensor_disconnect() {
+        ipcRenderer.send('sensor/disconnect'); 
       },
       add_message_success(context, msg) {
         this.commit("add_message", {type: "success", msg});
@@ -128,12 +128,12 @@ export default function getStore() {
     store.commit('gateway_state', state);
     
     if (state == 'connected') {
-      store.dispatch('gateway_node_list_get');
+      store.dispatch('gateway_sensor_list_get');
     }
   });
 
-  ipcRenderer.on('gateway/node/list', (sender, list) => {
-    store.commit('gateway_node_list', list);
+  ipcRenderer.on('gateway/sensor/list', (sender, list) => {
+    store.commit('gateway_sensor_list', list);
   });
 
   ipcRenderer.on('gateway/recv', (sender, payload) => {
@@ -144,8 +144,8 @@ export default function getStore() {
     store.commit('error', message);
   });
 
-  ipcRenderer.on('node-update', (sender, payload) => {
-    store.commit('node_update', payload);
+  ipcRenderer.on('sensor-update', (sender, payload) => {
+    store.commit('sensor_update', payload);
   });
   ipcRenderer.on('gateway-update', (sender, payload) => {
     store.commit('gateway_update', payload);

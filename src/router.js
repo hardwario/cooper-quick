@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import Connectors from './views/Connectors.vue'
-import Node from './views/Node.vue'
+import Sensor from './views/Sensor.vue'
 import Datasheet from './views/Datasheet.vue'
 import Dongle from './views/Dongle.vue'
 
@@ -23,9 +23,9 @@ export default new Router({
       component: Dongle
     },
     {
-      path: '/Node',
-      name: 'node',
-      component: Node
+      path: '/sensor',
+      name: 'sensor',
+      component: Sensor
     },
     {
       path: '/connectors',
