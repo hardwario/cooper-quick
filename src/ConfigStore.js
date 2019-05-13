@@ -18,8 +18,8 @@ class ConfigStore {
             }
 
         } catch(error) {
-            console.error(error);
-
+            if (error.code != 'ENOENT')
+                console.error(error);
             this.data = defaults;
         }
     }
