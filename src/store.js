@@ -42,6 +42,15 @@ export default function getStore() {
         state.gateway.state = gwstate;
       },
       gateway_sensor_list(state, list) {
+        for (let i in state.gateway.sensorList) {
+          let oldSensor = state.gateway.sensorList[i];
+          for (let j in list) {
+            if (list[j].id == oldSensor.id) {
+              list[j].recv = oldSensor.recv;
+              break;
+            }
+          }
+        }
         state.gateway.sensorList = list;
       },
       gateway_recv(state, payload) {
