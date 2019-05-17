@@ -104,22 +104,26 @@ class Sensor extends EventEmitter {
     _atStateChange(state) {
         if (state == STATE_CONNECTED) {
             
-            this._at.command("+CGMM", (command, response)=>{
-                if (response && /\+CGMM\:\s+COOPER R\d+\.\d+/.test(response[0]) ) {
-                    this._state = STATE_CONNECTED;
-                    this.emit("state", this._state);
+            this._at.command("I", (command, response)=>{
 
-                    this._attributes = {}
-
-                    this._update(command, response);
-                    this._at.command("+CGMR", this._update.bind(this));
-                    this._at.command("+CGSN", this._update.bind(this));
-                    this._at.command("$CHANNEL?", this._update.bind(this));
-
-                } else {
+                if (!response || (!/COOPER RF Sensor R\d+\.\d+ v.+?/.test(response[0]) && !/COOPER R1\.\d \d\.\d\.\d/.test(response[0]))) {
                     this.emit("error", "This device is not COOPER Sensor.");
                     this._at.disconnect();
+                    return;
                 }
+
+                this._state = STATE_CONNECTED;
+
+                this.emit("state", this._state);
+
+                this._attributes = {}
+
+                this._update(command, response);
+
+                this._at.command("+CGMM", this._update.bind(this));
+                this._at.command("+CGMR", this._update.bind(this));
+                this._at.command("+CGSN", this._update.bind(this));
+                this._at.command("$CHANNEL?", this._update.bind(this));
             });
 
             return;
@@ -131,6 +135,10 @@ class Sensor extends EventEmitter {
 
     _atURC(line) {
         console.log("Sensor urc:", line);
+        if (line.startsWith('+CGSN:')) {
+            this._update("+CGSN", [line]);
+        }
+        this.emit("urc", line);
     }
 }
 
