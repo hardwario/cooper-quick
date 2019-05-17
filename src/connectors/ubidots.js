@@ -2,6 +2,14 @@
 
 const request = require('request');
 
+const payloadReplace = {
+    'co2_conc': 'co2-conc',
+    'voc_conc': 'voc-conc',
+    'press_count': 'press-count',
+    'sound_level': 'sound-level',
+    'motion_count': 'motion-count'
+}
+
 function send(token, payload) {
 
     if (!token || token.length < 8) {
@@ -15,6 +23,12 @@ function send(token, payload) {
 
     for (var propName in payload) { 
         if (payload[propName] === null || payload[propName] === undefined) {
+            delete payload[propName];
+            continue;
+        }
+        let newKey = payloadReplace[propName];
+        if (newKey) {
+            payload[newKey] = payload[propName];
             delete payload[propName];
         }
     }
