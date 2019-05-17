@@ -3,9 +3,14 @@
 const EventEmitter = require('events');
 const { ATClient, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED } = require("./atclient");
 
-const RECV_DECODE = [
+
+function str(x) {
+    return x + '';
+}
+
+const RECV_DECODE_V100 = [
     ["rssi", parseInt],
-    ["id", null],
+    ["id", str],
     ["sequence", parseInt],
     ["altitude", parseInt],
     ["co2-conc", parseInt],
@@ -21,10 +26,42 @@ const RECV_DECODE = [
     ["voltage", parseFloat]
 ];
 
+const RECV_START = [
+    ["rssi", parseInt],
+    ["id", str],
+    ["header", parseInt],
+    ["sequence", parseInt],
+    ["uptime", parseInt],
+]
+
+const RECV_TYPE_LUT = {
+    1: {'type': 'beacon',
+        'items': [
+            ["altitude", parseInt],
+            ["co2_conc", parseInt],
+            ["humidity", parseFloat],
+            ["illuminance", parseInt],
+            ["motion_count", parseInt],
+            ["orientation", parseInt],
+            ["press_count", parseInt],
+            ["pressure", parseInt],
+            ["sound_level", parseInt],
+            ["temperature", parseFloat],
+            ["voc_conc", parseInt],
+            ["voltage", parseFloat]
+        ]},
+    2: {'type': 'sound',
+        'items': [
+            ["min", parseInt],
+            ["max", parseInt],
+        ]}
+}
+
 class Gateway extends EventEmitter {
     constructor(device) {
         super();
 
+        this._oldRecv = false;
         this._state = STATE_DISCONNECTED;
         this._at = new ATClient(device);
         this._at.on('state', this._atStateChange.bind(this));
@@ -144,18 +181,31 @@ class Gateway extends EventEmitter {
     _atStateChange(state) {
         if (state == STATE_CONNECTED) {
             
-            this._at.command("+CGMM", (command, response)=>{
-                if (response && response[0].indexOf("DONGLE") > -1) {
+            this._at.command("I", (command, response)=>{
+                if (response) {
+
+                    if (/COOPER RF Dongle R\d+\.\d+ v.+?/.test(response[0]))
+                    {
+                        this._oldRecv = false;
+                    } else if (response[0].indexOf("DONGLE") > -1) {
+                        this._oldRecv = true;
+                    } else {
+                        this.emit("error", "This device is not COOPER RF Dongle.");
+                        this._at.disconnect();
+                        return
+                    }
+                    
                     this._state = STATE_CONNECTED;
                     this.emit("state", this._state);
 
                     this._update(command, response);
+                    this._at.command("+CGMM", this._update.bind(this));
                     this._at.command("+CGMR", this._update.bind(this));
                     this._at.command("+CGSN", this._update.bind(this));
                     this._at.command("$CHANNEL?", this._update.bind(this));
 
                 } else {
-                    this.emit("error", "This device is not COOPER dongle.");
+                    this.emit("error", "This device is not COOPER RF Dongle.");
                     this._at.disconnect();
                 }
             });
@@ -178,20 +228,39 @@ class Gateway extends EventEmitter {
     }
 
     _decodeRECV(line) {
-        let values = line.slice(7).split(',');
         let payload = {};
-        for (let i=0, l=RECV_DECODE.length; i < l; i++) {
-            let decode = RECV_DECODE[i];
-            let value = values[i];
-            if (value != "") {
-                payload[decode[0]] = decode[1] ? decode[1](value) : value;
-            } else {
-                payload[decode[0]] = null;
+        let values = line.slice(7).split(',');
+        
+        if (this._oldRecv) {
+            for (let i=0, l=RECV_DECODE_V100.length; i < l; i++) {
+                let decode = RECV_DECODE_V100[i];
+                let value = values[i];
+                payload[decode[0]] = value != "" ? decode[1](value) : null;
+            }
+        } else {
+
+            for (let i=0, l=RECV_START.length; i < l; i++) {
+                let decode = RECV_START[i];
+                let value = values[i];
+                payload[decode[0]] = value != "" ? decode[1](value) : null;
+            }
+
+            let recv_type = RECV_TYPE_LUT[payload['header']];
+
+            if (recv_type) {
+                delete payload['header']
+                payload['type'] = recv_type['type'];
+                let items = recv_type['items'];
+                for (let i=0, l=items.length; i < l; i++) {
+                    let decode = items[i];
+                    let value = values[i + 5];
+                    payload[decode[0]] = value != "" ? decode[1](value) : null;
+                }
             }
         }
+
         return payload;
     }
 }
-
 
 module.exports = { Gateway, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED }
