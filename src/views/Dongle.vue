@@ -17,7 +17,7 @@
       Connection ....
       </div>
 
-       <button class="btn btn-danger" v-if="$store.state.gateway.state == 'connected'" @click="disconnect">Disconnect dongle</button>
+       <button class="btn btn-danger" v-if="$store.state.gateway.state == 'connected'" @click="disconnect">Disconnect Dongle</button>
     </div>
 
     <div class="table-responsive">
@@ -46,14 +46,14 @@
         <td>{{sensor.id}}</td>
         <td>{{sensor.recv.temperature}} °C </td>
         <td>{{sensor.recv.humidity}} % </td>
-        <td>{{sensor.recv['co2-conc']}} ppm </td>
+        <td>{{sensor.recv['co2_conc']}} ppm </td>
         <td>{{sensor.recv.illuminance}} lux </td>
         <td>{{sensor.recv.pressure}} Pa </td>
-        <td>{{sensor.recv['voc-conc']}} ppm </td>
+        <td>{{sensor.recv['voc_conc']}} ppm </td>
         <td>{{sensor.recv.orientation}} </td>
-        <td>{{sensor.recv['press-count']}} </td>
-        <td>{{sensor.recv['sound-level']}} </td>
-        <td>{{sensor.recv['motion-count']}} </td>
+        <td>{{sensor.recv['press_count']}} </td>
+        <td>{{sensor.recv['sound_level']}} </td>
+        <td>{{sensor.recv['motion_count']}} </td>
         <td>{{sensor.recv.voltage}} V</td>
         <td>{{sensor.recv.rssi}} </td>
         <td>{{sensor.recv.ts}}</td>

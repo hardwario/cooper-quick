@@ -35,6 +35,14 @@ function portListhandler() {
     });
 }
 
+const payloadReplace = {
+    'co2-conc': 'co2_conc',
+    'voc-conc': 'voc_conc',
+    'press-count': 'press_count',
+    'sound-level': 'sound_level',
+    'motion-count': 'motion_count'
+}
+
 module.exports.init = function() {
 
     portListhandler();
@@ -73,6 +81,13 @@ module.exports.init = function() {
         });
 
         gateway.on('recv', (payload) => {
+            console.log('recv', payload);
+            if ('co2-conc' in payload) {
+                for (let k in payloadReplace) {
+                    payload[payloadReplace[k]] = payload[k];
+                    delete payload[k];
+                }
+            }
             allWindowsSend('gateway/recv', payload);
         });
 
