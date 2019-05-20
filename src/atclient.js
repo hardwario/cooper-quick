@@ -29,7 +29,7 @@ class ATClient extends EventEmitter {
                 this._write('\x1b');
                 
                 this._timeout = setTimeout(()=>{
-                    this.emit("error", "There is no answer from the device. Please, make sure the device is the Radio Dongle and has the correct firmware.");
+                    this.emit("error", "There is no answer from the device. Please, make sure the device is has the correct firmware.");
                     this.disconnect();
                 }, 5000);
 
@@ -133,6 +133,10 @@ class ATClient extends EventEmitter {
 
         if (line.length == 0) return;
 
+        while (line.charCodeAt(0) === 0) {
+            line = line.slice(1);
+        }
+
         if (this._state == STATE_CONNECTION) {
             if (line.replace(/[\n\r]/g, '') == 'OK') {
                 
@@ -145,7 +149,7 @@ class ATClient extends EventEmitter {
                 this._state = STATE_CONNECTED;
                 this.emit("state", this._state);
             } else {
-                console.log(">" + line + "<");
+                console.log(">" + line + "<", Buffer.from(line).toString('hex'));
             }
 
             return;
