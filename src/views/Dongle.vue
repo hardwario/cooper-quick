@@ -2,7 +2,7 @@
   <div class="dongle">
     <div class="dongle-head">
       <div class="form-inline" id="dongleForm" v-if="$store.state.gateway.state == 'disconnected'">
-        <label class="mr-sm-2" for="dongleSelect">Dongle: </label>
+        <label class="mr-sm-2" for="dongleSelect">Device: </label>
         <b-form-select v-model="selected" :options="select_serial_port_oprions" required class="mr-sm-2" />
         <!-- <div class="form-check mb-2 mr-sm-2">
           <input class="form-check-input" type="checkbox" id="dongleChoiceRemember">
@@ -98,6 +98,13 @@ export default {
 
       this.$store.state.serial_port_list.forEach((item)=>{
         if(sensor_device == item.comName) return;
+        if (item.serialNumber.indexOf('dongle') == -1) return;
+        let text = item.comName
+
+        if (item.serialNumber.indexOf('hio') > -1) {
+          text += ' ' + item.serialNumber;
+        }
+
         ret.push({text: item.comName, value: item.comName});
       });
 
