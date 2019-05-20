@@ -1,6 +1,6 @@
 {
   "name": "cooper-quick",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "install": "electron-rebuild",
@@ -37,7 +37,7 @@
     "eslint": "^5.8.0",
     "eslint-plugin-vue": "^5.0.0-0",
     "pdfjs-dist": "^2.0.943",
-    "vue-cli-plugin-electron-builder": "^1.0.0-rc.9",
+    "vue-cli-plugin-electron-builder": "^1.0.2",
     "vue-template-compiler": "^2.5.17"
   },
   "main": "background.js"
