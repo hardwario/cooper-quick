@@ -34,7 +34,7 @@
             <b-nav-item to="/home">Home</b-nav-item>
             <b-nav-item to="/dongle">Dongle</b-nav-item>
             <b-nav-item to="/sensor">Sensor</b-nav-item>
-            <b-nav-item to="/connectors">Connectors</b-nav-item>
+            <b-nav-item to="/connectors">Cloud</b-nav-item>
             <b-nav-item to="/datasheet">Datasheet</b-nav-item>
           </b-nav>
         </div>
@@ -50,7 +50,7 @@
             {{ $store.state.error }}
         </b-alert>
         
-        <div v-for="message in $store.state.messages">
+        <div v-for="message in $store.state.messages" >
           <b-alert :variant="message.type" @dismissed="removeMessage" dismissible :show="message.show">
               {{ message.msg }}
           </b-alert>        
