@@ -29,7 +29,8 @@ export default function getStore() {
         firmwareVersion: null,
         id: null,
         channel: null,
-        model: null
+        model: null,
+        urc: null
       },
       bussy: false
     },
@@ -73,9 +74,13 @@ export default function getStore() {
           payload.firmwareVersion = null;
           payload.id = null;
           payload.channel = null;
-          payload.model = null
+          payload.model = null;
+          payload.urc = null;
         }
         state.sensor = Object.assign(state.sensor, payload);
+      },
+      sensor_urc(state, payload) {
+        state.sensor.urc = {line: payload, ts: new moment().format('MM/DD/YYYY hh:mm:ss')};
       },
       add_message(state, payload) {
         payload.show = true;
@@ -156,6 +161,11 @@ export default function getStore() {
   ipcRenderer.on('sensor-update', (sender, payload) => {
     store.commit('sensor_update', payload);
   });
+
+  ipcRenderer.on('sensor-urc', (sender, payload) => {
+    store.commit('sensor_urc', payload);
+  });
+
   ipcRenderer.on('gateway-update', (sender, payload) => {
     store.commit('gateway_update', payload);
   });

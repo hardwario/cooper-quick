@@ -234,6 +234,10 @@ module.exports.init = function() {
             console.log("Sensor update:", payload);
             event.sender.send('sensor-update', payload);
         });
+        sensor.on('urc', (payload) => {
+            console.log("Sensor urc:", payload);
+            event.sender.send('sensor-urc', payload);
+        });
 
         sensor.connect();
     });
@@ -245,6 +249,16 @@ module.exports.init = function() {
 
     ipcMain.on('sensor/state/get', (event) => {
         event.sender.send("sensor/state", sensor == null ? STATE_DISCONNECTED : sensor.getState() );
+    });
+
+    ipcMain.on('sync/sensor/command', (event, command) => {
+        if (sensor.getState() == STATE_CONNECTED) {
+            sensor.command(command, (command, response)=>{
+                event.returnValue = response;
+            });
+        } else {
+            event.returnValue = undefined;
+        }
     });
 
 };
