@@ -106,7 +106,7 @@ class Sensor extends EventEmitter {
             
             this._at.command("I", (command, response)=>{
 
-                if (!response || (!/COOPER RF Sensor R\d+\.\d+ v.+?/.test(response[0]) && !/COOPER R1\.\d \d\.\d\.\d/.test(response[0]))) {
+                if (!response || (!/COOPER (RF Sensor|SF|LR|NB|IQ) R\d+\.\d+ v.+?/.test(response[0]) && !/COOPER R1\.\d \d\.\d\.\d/.test(response[0]))) {
                     this.emit("error", "This device is not COOPER Sensor.");
                     this._at.disconnect();
                     return;
@@ -134,11 +134,12 @@ class Sensor extends EventEmitter {
     }
 
     _atURC(line) {
-        console.log("Sensor urc:", line);
+        //console.log("Sensor urc:", line);
         if (line.startsWith('+CGSN:')) {
             this._update("+CGSN", [line]);
+        } else {
+            this.emit("urc", line);
         }
-        this.emit("urc", line);
     }
 }
 
