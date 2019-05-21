@@ -26,22 +26,30 @@ install:
 
 script:
   - npm run electron:build
+  - mkdir release
   
   - >
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      cp dist_electron/*.deb .
-      rename -v "s/linux/ubuntu/" *.deb
-      mv *.deb dist_electron
 
-      cp dist_electron/*.AppImage .
-      rename -v "s/linux/ubuntu/" *.AppImage
-      mv *.AppImage dist_electron
+      cp dist_electron/*.deb release
+      rename -v "s/linux/ubuntu/" release/*.deb
+      cp dist_electron/*.deb release
 
-      cp dist_electron/*.snap .
-      rename -v "s/linux/ubuntu/" *.snap
-      mv *.snap dist_electron
-      
+      cp dist_electron/*.AppImage release
+      rename -v "s/linux/ubuntu/" release/*.AppImage
+      cp dist_electron/*.AppImage release
+
+      cp dist_electron/*.snap release
+      rename -v "s/linux/ubuntu/" release/*.snap
+      cp dist_electron/*.snap release
     fi
+
+  - >
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      cp dist_electron/*.dmg release
+    fi
+
+  - ls -lha release
 
 addons:
   apt:
@@ -52,11 +60,9 @@ addons:
       - g++-4.8-multilib
       - gcc-multilib
       - libzmq-dev
-      - libzmq-dev:i386
       - libkrb5-dev
       - bc
       - bsdtar
-      - zlib1g:i386
 
 cache:
   directories:
@@ -65,14 +71,11 @@ cache:
     - $HOME/.cache/electron-builder
 
 deploy:
-  provider: releases
-  file:
-    - dist_electron/*.dmg
-    - dist_electron/*.deb
-    - dist_electron/*.AppImage
-    - dist_electron/*.snap
-  file_glob: true
-  skip_cleanup: true
-  api_key: ${GITHUB_KEY}
-  on:
-    tags: true
+  - provider: releases
+    file:
+      - release/*.*
+    file_glob: true
+    skip_cleanup: true
+    api_key: ${GITHUB_KEY}
+    on:
+      tags: true
