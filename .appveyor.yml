@@ -22,7 +22,7 @@ install:
 build_script:
   - if "%platform%" == "x86" npm run electron:build
   - if "%platform%" == "x64" npm run electron:build
-  - cd release
+  - cd dist_electron
   - dir
   - ps: >-
       $platform = Get-ChildItem Env:PLATFORM
@@ -36,7 +36,7 @@ build_script:
   - dir
 
 artifacts:
-  - path: release\*.exe
+  - path: dist_electron\*.exe
 
 cache:
   - node_modules
