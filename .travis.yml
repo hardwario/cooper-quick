@@ -10,26 +10,9 @@ os:
 env:
   matrix:
   - BINARY_BUILDER="true" TRAVIS_NODE_VERSION="10"
-  - BINARY_BUILDER="true" TRAVIS_NODE_VERSION="10" ARCH="x86"
-
-matrix:
-  exclude:
-  - os: osx
-    env: BINARY_BUILDER="true" TRAVIS_NODE_VERSION="10" ARCH="x86"
 
 before_install:
-  # download node if testing x86 architecture
   - nvm install $TRAVIS_NODE_VERSION
-  - >
-    if [[ "$ARCH" == "x86" ]]; then
-      BASE_URL=$(node -p "'https://nodejs.org/dist/' + process.version");
-      X86_FILE=$(node -p "'node-' + process.version + '-' + process.platform + '-x86'");
-      wget $BASE_URL/$X86_FILE.tar.gz;
-      tar -xf $X86_FILE.tar.gz;
-      nvm deactivate;
-      export PATH=`pwd`/$X86_FILE/bin:$PATH;
-    fi;
-
   - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
   - node --version
   - node -p 'process.platform + "@" + process.arch'
@@ -42,29 +25,22 @@ install:
   - npm install
 
 script:
+  - npm run electron:build
+  
   - >
     if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      if [[ "$ARCH" == "x86" ]]; then
-        npm run electron:build;
-      else
-        npm run electron:build;
-        npx vue-cli-service electron:build --linux AppImage
-      fi
-
       cp dist_electron/*.deb .
       rename -v "s/linux/ubuntu/" *.deb
       mv *.deb dist_electron
 
-      if [[ "$ARCH" == "x64" ]]; then
-        cp dist_electron/*.AppImage .
-        rename -v "s/linux/ubuntu/" *.AppImage
-        mv *.AppImage dist_electron
-      fi
-    fi
+      cp dist_electron/*.AppImage .
+      rename -v "s/linux/ubuntu/" *.AppImage
+      mv *.AppImage dist_electron
 
-  - >
-    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      npm run package-mac;
+      cp dist_electron/*.snap .
+      rename -v "s/linux/ubuntu/" *.snap
+      mv *.snap dist_electron
+      
     fi
 
 addons:
@@ -91,9 +67,10 @@ cache:
 deploy:
   provider: releases
   file:
+    - dist_electron/*.dmg
     - dist_electron/*.deb
     - dist_electron/*.AppImage
-    - dist_electron/*.dmg
+    - dist_electron/*.snap
   file_glob: true
   skip_cleanup: true
   api_key: ${GITHUB_KEY}

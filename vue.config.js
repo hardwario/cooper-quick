@@ -23,6 +23,8 @@ module.exports = {
             "artifactName": "cooper-quick-${version}-linux-${arch}.${ext}",
             "target": [
               "deb",
+              "appImage",
+              "snap"
             ],
             "category": "Utility"
           },
