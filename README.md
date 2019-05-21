@@ -1,4 +1,8 @@
-# cooper-quick
+# COOPER Quick
+
+[![Release](https://img.shields.io/github/release/hardwario/cooper-quick.svg)](https://github.com/hardwario/cooper-quick/releases)
+[![License](https://img.shields.io/github/license/hardwario/cooper-quick.svg)](https://github.com/hardwario/cooper-quick/blob/master/LICENSE)
+
 
 ## Project setup
 ```
