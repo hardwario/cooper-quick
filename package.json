@@ -1,7 +1,16 @@
 {
   "name": "cooper-quick",
   "version": "1.0.0",
-  "private": true,
+  "author": {
+    "name": "HARDWARIO s.r.o.",
+    "email": "karel.blavka@hardwario.com",
+    "url": "https://github.com/hardwario"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hardwario/cooper-quick.git"
+  },
+  "license": "MIT",
   "scripts": {
     "install": "electron-rebuild",
     "serve": "vue-cli-service serve",
@@ -12,33 +21,34 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^1.2.12",
-    "@fortawesome/free-solid-svg-icons": "^5.6.3",
-    "@fortawesome/vue-fontawesome": "^0.1.3",
-    "azure-iot-device-http": "^1.8.3",
-    "azure-iot-security-tpm": "^1.3.3",
-    "bootstrap-vue": "^2.0.0-rc.11",
-    "jquery": "^3.3.1",
-    "moment": "^2.22.2",
+    "@fortawesome/fontawesome-svg-core": "^1.2.18",
+    "@fortawesome/free-solid-svg-icons": "^5.8.2",
+    "@fortawesome/vue-fontawesome": "^0.1.6",
+    "azure-iot-device-http": "^1.9.9",
+    "azure-iot-security-tpm": "^1.5.9",
+    "bootstrap-vue": "^2.0.0-rc.20",
+    "jquery": "^3.4.1",
+    "moment": "^2.24.0",
     "request": "^2.88.0",
-    "serialport": "^7.1.0",
-    "vue": "^2.5.17",
-    "vue-pdf": "^4.0.5",
-    "vue-router": "^3.0.1",
-    "vuex": "^3.0.1"
+    "serialport": "^7.1.5",
+    "vue": "^2.6.10",
+    "vue-pdf": "^4.0.6",
+    "vue-router": "^3.0.6",
+    "vuex": "^3.1.1"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.2.0",
-    "@vue/cli-plugin-eslint": "^3.2.0",
-    "@vue/cli-service": "^3.2.0",
+    "@vue/cli-plugin-babel": "^3.7.0",
+    "@vue/cli-plugin-eslint": "^3.7.0",
+    "@vue/cli-service": "^3.7.0",
     "babel-eslint": "^10.0.1",
-    "electron": "^3.0.0",
-    "electron-rebuild": "^1.8.2",
-    "eslint": "^5.8.0",
-    "eslint-plugin-vue": "^5.0.0-0",
+    "electron": "^4.2.2",
+    "electron-rebuild": "^1.8.4",
+    "electron-builder": "^20.38.5",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.2.2",
     "pdfjs-dist": "^2.0.943",
-    "vue-cli-plugin-electron-builder": "^1.0.2",
-    "vue-template-compiler": "^2.5.17"
+    "vue-cli-plugin-electron-builder": "^1.3.2",
+    "vue-template-compiler": "^2.6.10"
   },
   "main": "background.js"
 }
