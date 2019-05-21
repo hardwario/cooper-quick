@@ -1,0 +1,52 @@
+environment:
+  nodejs_version: "10"
+
+platform:
+  - x86
+  - x64
+
+init:
+  - git config --global core.autocrlf true
+
+install:
+  - nuget install secure-file -ExcludeVersion
+  - secure-file\tools\secure-file -decrypt hardwario-cert.p12.enc -out hardwario-cert.p12 -secret %enc_secret%
+  # Get the latest stable version of Node.js or io.js
+  - ps: Install-Product node $env:nodejs_version
+  # install modules
+  - npm install node-pre-gyp -g
+  - npm install electron-builder -g
+  - npm install
+  - npm rebuild node-sass
+
+build_script:
+  - if "%platform%" == "x86" npm run electron:build
+  - if "%platform%" == "x64" npm run electron:build
+  - cd release
+  - dir
+  - ps: >-
+      $platform = Get-ChildItem Env:PLATFORM
+
+      $platform = $platform.value
+
+      if($platform -eq "x86") { Dir *.exe | Rename-Item -NewName {$_.BaseName + "-32bit" + $_.Extension} }
+
+      if($platform -eq "x64") { Dir *.exe | Rename-Item -NewName {$_.BaseName + "-64bit" + $_.Extension} }
+
+  - dir
+
+artifacts:
+  - path: release\*.exe
+
+cache:
+  - node_modules
+  - '%USERPROFILE%\.electron'
+
+deploy:
+- provider: GitHub
+  auth_token:
+    secure: GiDIgm/VpW0tnaG8AkAeQlrLUeFmM0APtBo+VPXvO6mIAq17fS+HEQy0G7KaNbv6
+  artifact: /.*\.exe/
+  force_update: true
+  on:
+    appveyor_repo_tag: true
