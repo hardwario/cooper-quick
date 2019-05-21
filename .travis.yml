@@ -1,0 +1,101 @@
+language: node_js
+
+node_js:
+  - "10"
+
+os:
+  - linux
+  - osx
+
+env:
+  matrix:
+  - BINARY_BUILDER="true" TRAVIS_NODE_VERSION="10"
+  - BINARY_BUILDER="true" TRAVIS_NODE_VERSION="10" ARCH="x86"
+
+matrix:
+  exclude:
+  - os: osx
+    env: BINARY_BUILDER="true" TRAVIS_NODE_VERSION="10" ARCH="x86"
+
+before_install:
+  # download node if testing x86 architecture
+  - nvm install $TRAVIS_NODE_VERSION
+  - >
+    if [[ "$ARCH" == "x86" ]]; then
+      BASE_URL=$(node -p "'https://nodejs.org/dist/' + process.version");
+      X86_FILE=$(node -p "'node-' + process.version + '-' + process.platform + '-x86'");
+      wget $BASE_URL/$X86_FILE.tar.gz;
+      tar -xf $X86_FILE.tar.gz;
+      nvm deactivate;
+      export PATH=`pwd`/$X86_FILE/bin:$PATH;
+    fi;
+
+  - if [[ $TRAVIS_OS_NAME == "linux" ]]; then export CXX=g++-4.8; fi
+  - node --version
+  - node -p 'process.platform + "@" + process.arch'
+  - npm --version
+  - npm install node-pre-gyp -g
+  - npm install electron-builder -g
+  - npm install npx -g
+
+install:
+  - npm install
+
+script:
+  - >
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      if [[ "$ARCH" == "x86" ]]; then
+        npm run electron:build;
+      else
+        npm run electron:build;
+        npx vue-cli-service electron:build --linux AppImage
+      fi
+
+      cp dist_electron/*.deb .
+      rename -v "s/linux/ubuntu/" *.deb
+      mv *.deb dist_electron
+
+      if [[ "$ARCH" == "x64" ]]; then
+        cp dist_electron/*.AppImage .
+        rename -v "s/linux/ubuntu/" *.AppImage
+        mv *.AppImage dist_electron
+      fi
+    fi
+
+  - >
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      npm run package-mac;
+    fi
+
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8
+      - g++-4.8-multilib
+      - gcc-multilib
+      - libzmq-dev
+      - libzmq-dev:i386
+      - libkrb5-dev
+      - bc
+      - bsdtar
+      - zlib1g:i386
+
+cache:
+  directories:
+    - node_modules
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
+
+deploy:
+  provider: releases
+  file:
+    - dist_electron/*.deb
+    - dist_electron/*.AppImage
+    - dist_electron/*.dmg
+  file_glob: true
+  skip_cleanup: true
+  api_key: ${GITHUB_KEY}
+  on:
+    tags: true
