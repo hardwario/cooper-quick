@@ -118,7 +118,7 @@ export default {
       return false;
     },
     isRFSensor(){
-      return this.sensor.model && this.sensor.model.indexOf('RF') > -1;
+      return this.sensor.model && (this.sensor.model.indexOf('RF') > -1 || this.sensor.model == "COOPER R1.1");
     },
     urc(){
       return this.sensor.urc;
