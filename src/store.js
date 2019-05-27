@@ -12,9 +12,7 @@ export default function getStore() {
     state: {
       serial_port_list: [],
       error: null,
-      messages: [
-        {msg: "test", type: "alert"}
-      ],
+      messages: [],
       gateway: {
         state: "disconnected",
         device: null,
@@ -84,6 +82,7 @@ export default function getStore() {
       },
       add_message(state, payload) {
         payload.show = true;
+        payload.id = state.messages.length;
         setTimeout(()=>{
           payload.show = false;
         }, 2000);

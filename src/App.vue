@@ -1,30 +1,6 @@
 
 <template>
 <div id="app">
-
-<!--
-    <b-navbar toggleable="md" type="dark" variant="dark" fixed="top">
-      <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
-
-      <b-navbar-brand href="#">COOPER Quick</b-navbar-brand>
-
-      <b-collapse is-nav id="nav_collapse">
-        <b-navbar-nav>
-          <b-nav-item to="/">Home</b-nav-item>
-          <b-nav-item to="/dongle">Dongle</b-nav-item>
-          <b-nav-item to="/sensor">Device</b-nav-item>
-          <b-nav-item to="/config">Config</b-nav-item>
-          <b-nav-item to="/datasheet">Datasheet</b-nav-item>
-        </b-navbar-nav>
-
-        <b-navbar-nav class="ml-auto">
-          <button class="btn btn-danger" v-if="$store.state.gateway.state == 'connected'" @click="disconnect">Disconnect dongle</button>
-        </b-navbar-nav>
-
-      </b-collapse>
-    </b-navbar>
--->
-
   <div  class="app container-fluid">
     <div class="row">
     
@@ -50,8 +26,8 @@
             {{ $store.state.error }}
         </b-alert>
         
-        <div v-for="message in $store.state.messages" >
-          <b-alert :variant="message.type" @dismissed="removeMessage" dismissible :show="message.show">
+        <div v-for="message in $store.state.messages" v-bind:key="message.id">
+          <b-alert :variant="message.type" dismissible :show="message.show">
               {{ message.msg }}
           </b-alert>        
         </div>
@@ -74,9 +50,6 @@ export default {
   methods: {
     disconnect() {
       this.$store.dispatch('gateway_disconnect');
-    },
-    removeMessage(evt, a, b) {
-      console.log(evt, a, b)
     }
   }
 }
@@ -142,7 +115,7 @@ body {
   border-radius: 0;
 }
 
-.sidebar .sidebar-sticky .nav-link.active {
+.sidebar .sidebar-sticky .router-link-active {
   background-color: #0e788a;
   color: white;
 }
@@ -153,7 +126,7 @@ body {
 }
 
 .sidebar .nav-link:hover .feather,
-.sidebar .nav-link.active .feather {
+.sidebar .router-link-active .feather {
   color: inherit;
 }
 
