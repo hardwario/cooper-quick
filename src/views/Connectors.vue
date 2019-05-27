@@ -111,7 +111,7 @@ export default {
   },
   mounted() {
     ipcRenderer.on('azureiotcentral/connectionString', function(sender, payload) {
-      console.log('azureiotcentral/connectionString', payload, this.azureiotcentral.device);
+      // console.log('azureiotcentral/connectionString', payload, this.azureiotcentral.device);
       if (payload.deviceId == this.azureiotcentral.device.deviceId) {
         this.$set(this.azureiotcentral.device, 'connectionString', payload.connectionString);
         this.azureiotcentral.wait = false;

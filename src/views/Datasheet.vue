@@ -27,12 +27,10 @@ export default {
 		}
 	},
   created(){
-    console.log('created');
     this.src.then(pdf => {
 			this.numPages = pdf.numPages;
-      console.log('this.src.then', pdf.numPages)
-		})
-    .catch((error) => {console.log('this.src.catch', error)})
+		});
+    //.catch((error) => {console.log('this.src.catch', error)})
   }
 }
 

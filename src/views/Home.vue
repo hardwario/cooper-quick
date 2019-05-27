@@ -30,17 +30,10 @@ export default {
     console.log('created');
     this.src.then(pdf => {  
 			this.numPages = pdf.numPages;
-      console.log('this.src.then', pdf.numPages)
-		})
-    .catch((error) => {console.log('this.src.catch', error)})
+		});
+    //.catch((error) => {console.log('this.src.catch', error)})
   },
   methods: {
-    nnn(data) {
-      console.log('nnn', data)
-    },
-    eee(data) {
-      console.log('eee', data)
-    }
   }
 }
 
