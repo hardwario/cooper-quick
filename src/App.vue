@@ -13,8 +13,9 @@
             <b-nav-item to="/connectors">Cloud</b-nav-item>
             <b-nav-item to="/datasheet">Datasheet</b-nav-item>
           </b-nav>
+
+          <img  src="/logo.webp" class="logo" @click="openHardwarioCom" />
         </div>
-        {{$store.state.messages.length}}
       </nav>
 
       <main role="main" class="">
@@ -41,6 +42,8 @@
 </template>
 
 <script>
+const { shell } = require("electron");
+
 export default {
   name: 'app',
   created() {
@@ -50,6 +53,9 @@ export default {
   methods: {
     disconnect() {
       this.$store.dispatch('gateway_disconnect');
+    },
+    openHardwarioCom() {
+        shell.openExternal("https://www.hardwario.com/");
     }
   }
 }
@@ -128,6 +134,17 @@ body {
 .sidebar .nav-link:hover .feather,
 .sidebar .router-link-active .feather {
   color: inherit;
+}
+
+.sidebar .sidebar-sticky img.logo {
+  width: 100px;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+.sidebar .sidebar-sticky img.logo:hover {
+  cursor: pointer;
 }
 
 .sidebar-heading {
