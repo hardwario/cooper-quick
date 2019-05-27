@@ -46,7 +46,7 @@
       <hr class="my-4">
 
       <table>
-      <tr v-for="line in status">
+      <tr v-for="line in status" v-bind:key="line">
         <td>{{line[0]}}</td>
         <td>{{line[1]}}</td>
       </tr>

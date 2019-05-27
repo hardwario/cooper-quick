@@ -42,7 +42,7 @@
       </tr>
       </thead>
       <tbody >
-      <tr v-for="sensor in $store.state.gateway.sensorList">
+      <tr v-for="sensor in $store.state.gateway.sensorList" v-bind:key="sensor">
         <td>{{sensor.id}}</td>
         <td>{{sensor.recv.temperature}} °C </td>
         <td>{{sensor.recv.humidity}} % </td>
@@ -99,13 +99,14 @@ export default {
       this.$store.state.serial_port_list.forEach((item)=>{
         if(sensor_device == item.comName) return;
         if (item.serialNumber.indexOf('dongle') == -1) return;
-        let text = item.comName
+
+        let text = item.comName;
 
         if (item.serialNumber.indexOf('hio') > -1) {
           text += ' ' + item.serialNumber;
         }
 
-        ret.push({text: item.comName, value: item.comName});
+        ret.push({text: text, value: item.comName});
       });
 
       return ret;
