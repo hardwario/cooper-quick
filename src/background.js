@@ -5,7 +5,10 @@ import {
   createProtocol,
   installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
+const path = require('path')
+
 const isDevelopment = process.env.NODE_ENV !== 'production'
+const appIconPath = path.join(__static, 'icon.png');
 
 const services = require("./services"); 
 services.init();
@@ -21,6 +24,9 @@ function createWindow () {
   win = new BrowserWindow({ 
     width: 1200, 
     height: 600, 
+    minWidth: 640,
+    minHeight: 480,
+    icon: appIconPath,
     webPreferences: {
       webSecurity: false,
       allowRunningInsecureContent: true
