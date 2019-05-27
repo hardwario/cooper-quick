@@ -27,6 +27,7 @@
     "azure-iot-device-http": "^1.9.9",
     "azure-iot-security-tpm": "^1.5.9",
     "bootstrap-vue": "^2.0.0-rc.20",
+    "electron-context-menu": "^0.12.1",
     "jquery": "^3.4.1",
     "moment": "^2.24.0",
     "request": "^2.88.0",

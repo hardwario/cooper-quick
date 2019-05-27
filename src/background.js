@@ -6,6 +6,7 @@ import {
   installVueDevtools
 } from 'vue-cli-plugin-electron-builder/lib'
 const path = require('path')
+const electronContextMenu = require('electron-context-menu')
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const appIconPath = path.join(__static, 'icon.png');
@@ -51,6 +52,8 @@ function createWindow () {
     win = null
   })
 }
+
+electronContextMenu({});
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
