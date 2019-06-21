@@ -1,7 +1,7 @@
 # COOPER Quick
 
 [![Travis](https://img.shields.io/travis/hardwario/cooper-quick/master.svg)](https://travis-ci.org/hardwario/cooper-quick)
-[![Appveyor](https://ci.appveyor.com/api/projects/status/j90ijfjm7awnydkp/branch/master?svg=true)](https://ci.appveyor.com/project/blavka/cooper-quick/branch/master)
+[![Appveyor](https://ci.appveyor.com/api/projects/status/gmqglux4x79s4os3?svg=true)](https://ci.appveyor.com/project/Hardwario/cooper-quick)
 [![Release](https://img.shields.io/github/release/hardwario/cooper-quick.svg)](https://github.com/hardwario/cooper-quick/releases)
 [![License](https://img.shields.io/github/license/hardwario/cooper-quick.svg)](https://github.com/hardwario/cooper-quick/blob/master/LICENSE)
 
