@@ -22,7 +22,7 @@
       {{sensor.model || '???'}}
     </template>
     <template slot="lead">
-      Id: {{sensor.id}}<br/>
+      Identifier: {{sensor.id}}<br/>
       Firmware version: {{sensor.firmwareVersion}}<br/>
       <span v-if="isRFSensor">Channel: {{sensor.channel}}</span><br/>
     </template>
@@ -30,18 +30,18 @@
     <div v-if="isGatewayConnected && sensor.id">
       <hr class="my-4">
 
-      <b-button variant="success"  v-if="isRFSensor && !inGatewaySensorList" @click="attach">Attach Sensor</b-button>
-      <b-button variant="danger" v-if="inGatewaySensorList" @click="detach">Detach Sensor</b-button>
+      <b-button variant="success" v-if="isRFSensor && !inGatewaySensorList" @click="attach">Attach sensor</b-button>
+      <b-button variant="danger" size="sm" v-if="inGatewaySensorList" @click="detach">Detach sensor</b-button>
 
       <div v-if="isConnected" style="display: inline">
       &nbsp; 
       &nbsp; 
       &nbsp; 
-      <b-button type="submit" variant="success" size="sm" @click="send">Send data</b-button>
+      <b-button type="submit" variant="success" size="sm" @click="send">send data</b-button>
       &nbsp; 
-      <b-button type="submit" variant="success" size="sm" @click="pulse">Pulse</b-button>
+      <b-button type="submit" variant="success" size="sm" @click="pulse">pulse</b-button>
       &nbsp; 
-      <b-button type="submit" variant="success" size="sm" @click="beep">Beep</b-button>  
+      <b-button type="submit" variant="success" size="sm" @click="beep">beep</b-button>  
       </div>  
 
     </div>
@@ -55,24 +55,36 @@
           <h4>Status</h4>
           <table class="table table-sm">
           <tr v-for="line in status" v-bind:key="line[0]">
-            <td>{{line[0]}}</td>
+            <td>{{line[0]}}&nbsp;{{units[line[0]]}}</td>
             <td>{{line[1]}}</td>
           </tr>
           </table>
           <b-button size="sm" variant="" @click="statusRefresh">Refresh</b-button>  
         </div>
         <div class="col-sm" style="max-width:400px">
-          <h4>Config</h4>
+          <h4>Configuration</h4>
           <table class="table table-sm">
-          <tr v-for="line in sensor.config" v-bind:key="line[0]+line[1]">
-            <td>{{line[1]}}</td>
-            <td>{{line[0]}}</td>
-            <td>{{line[2]}}</td>
-          </tr>
+          <template v-for="(timetable, i) in sensor.config" >
+            <tr v-bind:key="i">
+              <td colspan="3">Timetable {{i}}</td>
+            </tr>
+          
+            <tr v-for="(value, name) in timetable" v-bind:key="i + name">
+              <td></td>
+              <td>{{name}}</td>
+              <td>{{value}}</td>
+            </tr>
+
+          </template>
           </table>
-           <b-button size="sm" variant="" @click="dumpConfig">Save to file</b-button>  
+           <b-button size="sm" variant="" @click="dumpConfig">Save to file...</b-button>  
         </div>
       </div>
+
+      <br />
+      <br />
+      
+      <b-button size="sm" variant="" @click="dumpSnapshot">Snapshot to file...</b-button> 
     </div>
   </b-jumbotron>
 
@@ -87,7 +99,31 @@
 <script>
 import { ipcRenderer } from 'electron';
 import { remote } from 'electron';
+import YAML from 'yaml'
 var fs = require('fs');
+
+const UNITS = {
+  Acceleration: "[g]",
+  Altitude:	"[m]",
+  "CO2 Concentration": "[ppm]",
+  Humidity: "[%]",
+  Illuminance: "[lux]",
+  Orientation: "",
+  "Press Count": "",
+  Pressure: "[Pa]",
+  "Sound Level": "",
+  Temperature: "[°C]",
+  "VOC Concentration": "[ppm]",
+  Voltage: "[V]",
+  "Motion Count": ""
+};
+
+function trim(str, char='"') {
+    if (str.charAt(0) === char && str.charAt(str.length -1) === char) {
+        return str.substr(1,str.length -2);
+    }
+    return str;
+}
 
 export default {
   name: 'Sensor',
@@ -96,13 +132,16 @@ export default {
       selected: this.$store.state.sensor.device,
       sensor: this.$store.state.sensor,
       detachModalShow: false,
-      status: []
+      status: [],
+      units: UNITS
     }
   },
   created() {
   },
   async mounted(){
     this.statusRefresh();
+
+        this.snapshotYml();
   },
   computed: {
     isConnected(){
@@ -182,46 +221,77 @@ export default {
         line = line.slice(9).split(',');
         line[0] = line[0].slice(1, -1);
         if (line[0] === 'Acceleration') {
-          line[1] = line.slice(1);
+          return [line[0], line.slice(1).join(' / ')]
         }
         return line;
       })
     },
     configRefresh() {
-      let config = this.command('$CONFIG') || [];
-      this.sensor.config = config.map((line)=>{
+      let response = this.command('$CONFIG') || [];
+      let config = {};
+
+      let n = null;
+      for (let i=0, l=response.length; i<l; i++) {
+        let line = response[i];
         line = line.slice(9).split(',');
         line[0] = line[0].slice(1, -1);
-        return line;
-      })
-      console.log(this.sensor.config);
+
+        if (n != line[1]) {
+          config[parseInt(line[1])] = {};
+          n = line[1];
+        }
+        let value = line[2].replace(/(^\s+|\s+$)/g,'');
+
+        if (value.charAt(0) === '"' && value.charAt(value.length -1) === '"') {
+            value = value.substr(1,value.length -2);
+        } else {
+          value = parseInt(value);
+        }
+        
+        config[parseInt(line[1])][line[0]] = value;
+      }
+      this.sensor.config = config;
+    },
+    configYml() {
+      return YAML.stringify({timetable: this.sensor.config});
     },
     dumpConfig () {
       remote.dialog.showSaveDialog({defaultPath: "config.yml"}, function (fileName) {
         if (fileName === undefined) return;
-
-        let key = this.command('$KEY?');
-        if (key[0].startsWith("$KEY: ")) {
-          key = key[0].slice(6);
-        } else {
-          key = null;
-        }
-
-        let yml = "channel: " + this.sensor.channel + "\n";
-        yml += "key: " + key + "\n";
-        yml += "timetable: \n";
-
-        let n = null;
-        for (let i=0, l=this.sensor.config.length; i<l; i++) {
-          let line = this.sensor.config[i];
-          if (n != line[1]) {
-            n = line[1];
-            yml += "  " + line[1] + ":\n";
-          }
-          yml += "    " + line[0] + ": " + line[2] + "\n";
-        }
-
-        fs.writeFile(fileName, yml, function (err) {  
+        fs.writeFile(fileName, this.configYml(), function (err) {  
+          if (err) {
+            alert(err);
+          } 
+        });
+      }.bind(this)); 
+    },
+    atGet(name) {
+      let response = this.command('$' + name + '?');
+      if (response && response[0].startsWith("$" + name + ": ")) {
+        return trim(response[0].slice(name.length + 3));
+      }
+      return null;
+    },
+    snapshotYml() {
+      let snapshot = {
+        device: {
+          identifier: this.sensor.id,
+          model: this.sensor.model,
+          firmwareVersion: this.sensor.firmwareVersion,
+        },
+        rf: {
+          key: this.atGet('KEY'),
+          channel: this.sensor.channel,
+        },
+        config: {timetable: this.sensor.config},
+        status: this.status
+      };
+      return YAML.stringify(snapshot);
+    },
+    dumpSnapshot() {
+      remote.dialog.showSaveDialog({defaultPath: "snapshot-" + this.sensor.id +  ".yml"}, function (fileName) {
+        if (fileName === undefined) return;
+        fs.writeFile(fileName, this.snapshotYml(), function (err) {  
           if (err) {
             alert(err);
           } 
