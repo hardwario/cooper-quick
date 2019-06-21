@@ -26,34 +26,53 @@
       Firmware version: {{sensor.firmwareVersion}}<br/>
       <span v-if="isRFSensor">Channel: {{sensor.channel}}</span><br/>
     </template>
-    <hr class="my-4">
     
     <div v-if="isGatewayConnected && sensor.id">
-      <br/>
+      <hr class="my-4">
+
       <b-button variant="success"  v-if="isRFSensor && !inGatewaySensorList" @click="attach">Attach Sensor</b-button>
       <b-button variant="danger" v-if="inGatewaySensorList" @click="detach">Detach Sensor</b-button>
+
+      <div v-if="isConnected" style="display: inline">
+      &nbsp; 
+      &nbsp; 
+      &nbsp; 
+      <b-button type="submit" variant="success" size="sm" @click="send">Send data</b-button>
+      &nbsp; 
+      <b-button type="submit" variant="success" size="sm" @click="pulse">Pulse</b-button>
+      &nbsp; 
+      <b-button type="submit" variant="success" size="sm" @click="beep">Beep</b-button>  
+      </div>  
+
     </div>
 
     <div v-if="isConnected">
-      <br/>
-      <b-button type="submit" variant="success" @click="send">SEND</b-button>
-      &nbsp; 
-      <b-button type="submit" variant="success" @click="pulse">PULSE</b-button>
-      &nbsp; 
-      <b-button type="submit" variant="success" @click="beep">BEEP</b-button>   
-      <br/>
 
       <hr class="my-4">
 
-      <table>
-      <tr v-for="line in status" v-bind:key="line">
-        <td>{{line[0]}}</td>
-        <td>{{line[1]}}</td>
-      </tr>
-      </table>
-
-      <b-button type="submit" variant="" @click="statusRefresh">Refresh</b-button>  
-
+      <div class="row">
+        <div class="col-sm" style="max-width:400px">
+          <h4>Status</h4>
+          <table class="table table-sm">
+          <tr v-for="line in status" v-bind:key="line[0]">
+            <td>{{line[0]}}</td>
+            <td>{{line[1]}}</td>
+          </tr>
+          </table>
+          <b-button size="sm" variant="" @click="statusRefresh">Refresh</b-button>  
+        </div>
+        <div class="col-sm" style="max-width:400px">
+          <h4>Config</h4>
+          <table class="table table-sm">
+          <tr v-for="line in sensor.config" v-bind:key="line[0]+line[1]">
+            <td>{{line[1]}}</td>
+            <td>{{line[0]}}</td>
+            <td>{{line[2]}}</td>
+          </tr>
+          </table>
+           <b-button size="sm" variant="" @click="dumpConfig">Save to file</b-button>  
+        </div>
+      </div>
     </div>
   </b-jumbotron>
 
@@ -67,6 +86,8 @@
 
 <script>
 import { ipcRenderer } from 'electron';
+import { remote } from 'electron';
+var fs = require('fs');
 
 export default {
   name: 'Sensor',
@@ -80,7 +101,7 @@ export default {
   },
   created() {
   },
-  mounted(){
+  async mounted(){
     this.statusRefresh();
   },
   computed: {
@@ -165,12 +186,54 @@ export default {
         }
         return line;
       })
+    },
+    configRefresh() {
+      let config = this.command('$CONFIG') || [];
+      this.sensor.config = config.map((line)=>{
+        line = line.slice(9).split(',');
+        line[0] = line[0].slice(1, -1);
+        return line;
+      })
+      console.log(this.sensor.config);
+    },
+    dumpConfig () {
+      remote.dialog.showSaveDialog({defaultPath: "config.yml"}, function (fileName) {
+        if (fileName === undefined) return;
+
+        let key = this.command('$KEY?');
+        if (key[0].startsWith("$KEY: ")) {
+          key = key[0].slice(6);
+        } else {
+          key = null;
+        }
+
+        let yml = "channel: " + this.sensor.channel + "\n";
+        yml += "key: " + key + "\n";
+        yml += "timetable: \n";
+
+        let n = null;
+        for (let i=0, l=this.sensor.config.length; i<l; i++) {
+          let line = this.sensor.config[i];
+          if (n != line[1]) {
+            n = line[1];
+            yml += "  " + line[1] + ":\n";
+          }
+          yml += "    " + line[0] + ": " + line[2] + "\n";
+        }
+
+        fs.writeFile(fileName, yml, function (err) {  
+          if (err) {
+            alert(err);
+          } 
+        });
+      }.bind(this)); 
     }
   },
   watch:{
     isConnected: function(state){
       if (state) {
         this.statusRefresh();
+        this.configRefresh();
       }
     }
     // urc: function(state){
@@ -185,5 +248,11 @@ export default {
 <style>
 .sensor {
   padding: 10px;
+}
+
+.flowBox::after {
+    display: block;
+    clear: both;
+    content: "";
 }
 </style>

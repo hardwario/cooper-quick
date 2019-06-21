@@ -28,7 +28,8 @@ export default function getStore() {
         id: null,
         channel: null,
         model: null,
-        urc: null
+        urc: null,
+        config: null
       },
       bussy: false
     },
@@ -75,6 +76,7 @@ export default function getStore() {
           payload.channel = null;
           payload.model = null;
           payload.urc = null;
+          payload.config = null;
         }
         state.sensor = Object.assign(state.sensor, payload);
       },
