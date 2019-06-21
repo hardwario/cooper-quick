@@ -41,11 +41,12 @@ export default function getStore() {
         state.gateway.state = gwstate;
       },
       gateway_sensor_list(state, list) {
-        for (let i in state.gateway.sensorList) {
-          let oldSensor = state.gateway.sensorList[i];
-          for (let j in list) {
-            if (list[j].id == oldSensor.id) {
-              list[j].recv = oldSensor.recv;
+        for (let j in list) {
+          let sensor = list[j];
+          for (let i in state.gateway.sensorList) {
+            let oldSensor = state.gateway.sensorList[i];
+            if (sensor.id == oldSensor.id) {
+              sensor.recv = oldSensor.recv;
               break;
             }
           }
@@ -57,7 +58,7 @@ export default function getStore() {
           let sensor = state.gateway.sensorList[i];
           if (sensor.id == payload.id) {
             payload.ts = new moment().format('MM/DD/YYYY hh:mm:ss');
-            sensor.recv = payload;
+            sensor.recv[payload.type] = payload;
           }
         }
       },

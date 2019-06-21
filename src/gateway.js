@@ -104,7 +104,7 @@ class Gateway extends EventEmitter {
                 }else {
                     resolve( rows.map((row)=>{
                             let split = row.split(',');
-                            return {"id": split[0], "alias": split[1].slice(1, split[1].length - 2), recv: {}}
+                            return {"id": split[0], "alias": split[1].slice(1, split[1].length - 2), recv: {beacon: {}, sound: {}}}
                         })
                     );
                 }

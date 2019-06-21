@@ -24,39 +24,39 @@
     <table class="table" v-if="$store.state.gateway.state == 'connected'">
       <thead>
       <tr>
-        <th>Id</th>
-        <th>Temperature</th>
-        <th>Humidity </th>
-        <th>CO<sub>2</sub> </th>
-        <th>Illuminance </th>
-        <th>Pressure </th>
-        <th>VOC </th>
-        <th>Orientation </th>
-        <th>Button</th>
-        <th>Sound level </th>
-        <th>Motion count </th>
-        <th>Battery </th>
-        <th>RSSI </th>
-        <th>Time</th>
+        <th>Id<br/>&nbsp;</th>
+        <th>Temperature<br/>[°C]</th>
+        <th>Humidity<br/>[%]</th>
+        <th>CO<sub>2</sub><br/>[ppm]</th>
+        <th>Illuminance<br/>[lux]</th>
+        <th>Pressure<br/>[Pa]</th>
+        <th>VOC<br/>[ppm]</th>
+        <th>Orientation<br/>&nbsp;</th>
+        <th>Button<br/>[count]</th>
+        <th>Sound&nbsp;level<br/>&nbsp;</th>
+        <th>Motion<br/>[count]</th>
+        <th>Battery<br/>[V]</th>
+        <th>RSSI<br/>&nbsp;</th>
+        <th>Time<br/>&nbsp;</th>
         <th style="width:130px"></th>
       </tr>
       </thead>
       <tbody >
-      <tr v-for="sensor in $store.state.gateway.sensorList" v-bind:key="sensor">
+      <tr v-for="sensor in $store.state.gateway.sensorList" v-bind:key="sensor.id">
         <td>{{sensor.id}}</td>
-        <td>{{sensor.recv.temperature}} °C </td>
-        <td>{{sensor.recv.humidity}} % </td>
-        <td>{{sensor.recv['co2_conc']}} ppm </td>
-        <td>{{sensor.recv.illuminance}} lux </td>
-        <td>{{sensor.recv.pressure}} Pa </td>
-        <td>{{sensor.recv['voc_conc']}} ppm </td>
-        <td>{{sensor.recv.orientation}} </td>
-        <td>{{sensor.recv['press_count']}} </td>
-        <td>{{sensor.recv['sound_level']}} </td>
-        <td>{{sensor.recv['motion_count']}} </td>
-        <td>{{sensor.recv.voltage}} V</td>
-        <td>{{sensor.recv.rssi}} </td>
-        <td>{{sensor.recv.ts}}</td>
+        <td>{{sensor.recv.beacon.temperature}}</td>
+        <td>{{sensor.recv.beacon.humidity}}</td>
+        <td>{{sensor.recv.beacon['co2_conc']}}</td>
+        <td>{{sensor.recv.beacon.illuminance}}</td>
+        <td>{{sensor.recv.beacon.pressure}}</td>
+        <td>{{sensor.recv.beacon['voc_conc']}}</td>
+        <td>{{sensor.recv.beacon.orientation}} </td>
+        <td>{{sensor.recv.beacon['press_count']}} </td>
+        <td>{{sensor.recv.beacon['sound_level']}}<span v-if="sensor.recv.sound.type" title="(min : max)">&nbsp;({{sensor.recv.sound['min']}}&nbsp;:&nbsp;{{sensor.recv.sound['max']}})</span></td>
+        <td>{{sensor.recv.beacon['motion_count']}} </td>
+        <td>{{sensor.recv.beacon.voltage}}</td>
+        <td>{{sensor.recv.beacon.rssi}} </td>
+        <td>{{sensor.recv.beacon.ts}}</td>
         <td>
           <b-button @click="detachModalId=sensor.id; detachModalShow=true" variant="" ><font-awesome-icon icon="times" /></b-button>
           <!--&nbsp;
