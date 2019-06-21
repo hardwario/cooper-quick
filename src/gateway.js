@@ -1,7 +1,7 @@
 "use strict";
 
 const EventEmitter = require('events');
-const { ATClient, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED } = require("./atclient");
+const { ATClient, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED, trim } = require("./atclient");
 
 
 function str(x) {
@@ -157,7 +157,7 @@ class Gateway extends EventEmitter {
         }
 
         let i = response[0].indexOf(':');
-        let value = response[0].slice(i+2);
+        let value = trim(response[0].slice(i+2));
 
         if (command == "+CGMM") {
             this.model = value;

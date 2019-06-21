@@ -184,4 +184,11 @@ function getSerialPortList(callback) {
         });
 }
 
-module.exports = { ATClient, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED }
+function trim(str, char='"') {
+    if (str.charAt(0) === char && str.charAt(str.length -1) === char) {
+        return str.substr(1,str.length -2);
+    }
+    return str;
+}
+
+module.exports = { ATClient, getSerialPortList, STATE_DISCONNECTED, STATE_CONNECTION, STATE_CONNECTED, trim }
