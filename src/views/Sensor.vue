@@ -17,8 +17,8 @@
 
     <br/>
 
-    <b-jumbotron>
-    <template slot="header">
+    <b-jumbotron v-if="isConnected">
+    <template slot="header" >
       {{sensor.model || '???'}}
     </template>
     <template slot="lead">
@@ -31,22 +31,11 @@
       <hr class="my-4">
 
       <b-button variant="success" v-if="isRFSensor && !inGatewaySensorList" @click="attach">Attach sensor</b-button>
-      <b-button variant="danger" size="sm" v-if="inGatewaySensorList" @click="detach">Detach sensor</b-button>
-
-      <div v-if="isConnected" style="display: inline">
-      &nbsp; 
-      &nbsp; 
-      &nbsp; 
-      <b-button type="submit" variant="success" size="sm" @click="send">send data</b-button>
-      &nbsp; 
-      <b-button type="submit" variant="success" size="sm" @click="pulse">pulse</b-button>
-      &nbsp; 
-      <b-button type="submit" variant="success" size="sm" @click="beep">beep</b-button>  
-      </div>  
+      <b-button variant="danger" v-if="inGatewaySensorList" @click="detach">Detach sensor</b-button>
 
     </div>
 
-    <div v-if="isConnected">
+    <div>
 
       <hr class="my-4">
 
@@ -58,8 +47,7 @@
             <td>{{line[0]}}&nbsp;{{units[line[0]]}}</td>
             <td>{{line[1]}}</td>
           </tr>
-          </table>
-          <b-button size="sm" variant="" @click="statusRefresh">Refresh</b-button>  
+          </table> 
         </div>
         <div class="col-sm" style="max-width:400px">
           <h4>Configuration</h4>
@@ -76,20 +64,29 @@
             </tr>
 
           </template>
-          </table>
-           <b-button size="sm" variant="" @click="dumpConfig">Save to file...</b-button>  
+          </table>  
         </div>
       </div>
 
       <br />
       <br />
-      
-      <b-button size="sm" variant="" @click="dumpSnapshot">Snapshot to file...</b-button> 
+
+      <b-button size="sm" variant="primary" @click="statusRefresh">Refresh</b-button> 
+      &nbsp; 
+      <b-button type="submit" variant="success" size="sm" @click="send">Send data</b-button>
+      &nbsp; 
+      <b-button type="submit" variant="success" size="sm" @click="pulse">Pulse</b-button>
+      &nbsp; 
+      <b-button type="submit" variant="success" size="sm" @click="beep">Beep</b-button>  
+      &nbsp;
+      <b-button size="sm" variant="" @click="dumpConfig">Save configuration...</b-button>
+      &nbsp;
+      <b-button size="sm" variant="" @click="dumpSnapshot">Save all...</b-button> 
     </div>
   </b-jumbotron>
 
-    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this Sensor?">
-      Id: {{sensor.id}}
+    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this sensor?">
+      Identifier: {{sensor.id}}
     </b-modal>
 
   </div>
@@ -140,8 +137,6 @@ export default {
   },
   async mounted(){
     this.statusRefresh();
-
-        this.snapshotYml();
   },
   computed: {
     isConnected(){
@@ -223,6 +218,15 @@ export default {
         if (line[0] === 'Acceleration') {
           return [line[0], line.slice(1).join(' / ')]
         }
+        else if (line[0] == 'Orientation') {
+          line[1] = parseInt(line[1]);
+        }
+        else if (line[0].indexOf('Count') > 0) {
+          line[1] = parseInt(line[1]);
+        } 
+        else {
+          line[1] = parseFloat(line[1]);
+        }
         return line;
       })
     },
@@ -253,7 +257,7 @@ export default {
       this.sensor.config = config;
     },
     configYml() {
-      return YAML.stringify({timetable: this.sensor.config});
+      return YAML.stringify({key: this.atGet('KEY'), channel: this.sensor.channel, timetable: this.sensor.config});
     },
     dumpConfig () {
       remote.dialog.showSaveDialog({defaultPath: "config.yml"}, function (fileName) {
@@ -273,18 +277,19 @@ export default {
       return null;
     },
     snapshotYml() {
+      let status = {};
+      for (let i=0, l=this.status.length; i<l; i++) {
+        let row = this.status[i];
+        status[row[0]] = row[1];
+      }
       let snapshot = {
         device: {
           identifier: this.sensor.id,
           model: this.sensor.model,
           firmwareVersion: this.sensor.firmwareVersion,
         },
-        rf: {
-          key: this.atGet('KEY'),
-          channel: this.sensor.channel,
-        },
-        config: {timetable: this.sensor.config},
-        status: this.status
+        config: {key: this.atGet('KEY'), channel: this.sensor.channel,timetable: this.sensor.config},
+        status: status
       };
       return YAML.stringify(snapshot);
     },
