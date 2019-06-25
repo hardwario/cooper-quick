@@ -17,14 +17,15 @@
       Connection ....
       </div>
 
-       <button class="btn btn-danger" v-if="$store.state.gateway.state == 'connected'" @click="disconnect">Disconnect Dongle</button>
+       <button class="btn btn-danger" v-if="$store.state.gateway.state == 'connected'" @click="disconnect">Disconnect</button>
     </div>
 
     <div class="table-responsive">
     <table class="table" v-if="$store.state.gateway.state == 'connected'">
       <thead>
       <tr>
-        <th>Id<br/>&nbsp;</th>
+        <th></th>
+        <th>Identifier<br/>&nbsp;</th>
         <th>Temperature<br/>[°C]</th>
         <th>Humidity<br/>[%]</th>
         <th>CO<sub>2</sub><br/>[ppm]</th>
@@ -38,11 +39,11 @@
         <th>Battery<br/>[V]</th>
         <th>RSSI<br/>&nbsp;</th>
         <th>Time<br/>&nbsp;</th>
-        <th style="width:130px"></th>
       </tr>
       </thead>
       <tbody >
       <tr v-for="sensor in $store.state.gateway.sensorList" v-bind:key="sensor.id">
+        <td><b class="dtachSensor" @click="detachModalId=sensor.id; detachModalShow=true">✘</b></td>
         <td>{{sensor.id}}</td>
         <td>{{sensor.recv.beacon.temperature}}</td>
         <td>{{sensor.recv.beacon.humidity}}</td>
@@ -57,19 +58,13 @@
         <td>{{sensor.recv.beacon.voltage}}</td>
         <td>{{sensor.recv.beacon.rssi}} </td>
         <td>{{sensor.recv.beacon.ts}}</td>
-        <td>
-          <b-button @click="detachModalId=sensor.id; detachModalShow=true" variant="" ><font-awesome-icon icon="times" /></b-button>
-          <!--&nbsp;
-          <b-button @click="detachModalId=sensor.id; detachModalShow=true" variant="" ><font-awesome-icon icon="cog" /></b-button>-->
-        </td>
       </tr>
       </tbody>
     </table>
     </div>
 
-
-    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this Sensor?">
-      Id: {{detachModalId}}
+    <b-modal v-model="detachModalShow" centered @ok="detachModalOk" title="Really detach this sensor?">
+      Identifier: {{detachModalId}}
     </b-modal>
 
   </div>
@@ -131,5 +126,9 @@ export default {
 <style>
 .dongle-head  {
   padding: 10px;
+}
+.dtachSensor {
+  cursor: pointer;
+  color: #dc3545;
 }
 </style>

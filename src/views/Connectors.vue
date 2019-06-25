@@ -1,7 +1,7 @@
 <template>
   <div class="config">
 
-   <h2>Azure IOT Central</h2>
+   <h2>Azure IoT Central</h2>
     
     <b-form @submit="onSubmitAzureiotcentral" >
       <b-form-group id="azureiotcentralChecks">
