@@ -1,6 +1,6 @@
 <template>
-  <div id="home">
-      <pdf
+  <div id="home" v-if="src">
+      <pdf style="width:100%" 
         v-for="i in numPages"
         :src='src'
         :key="i"
@@ -22,18 +22,25 @@ export default {
   },
 	data() {
 		return {
-			src: pdf.createLoadingTask({data: pdfData}),
-      numPages: 0
+			src: null,
+      numPages: 0,
+      timeout: null
 		}
 	},
-  created() {
-    console.log('created');
-    this.src.then(pdf => {  
-			this.numPages = pdf.numPages;
-		});
-    //.catch((error) => {console.log('this.src.catch', error)})
+  mounted(){
+    this.load();
   },
   methods: {
+    load() {
+      this.src = pdf.createLoadingTask({data: pdfData});
+      this.timeout = setTimeout(()=>{
+        this.load();
+      }, 2000);
+      this.src.then(pdf => {  
+        clearTimeout(this.timeout);
+        this.numPages = pdf.numPages;
+      });
+    }
   }
 }
 
