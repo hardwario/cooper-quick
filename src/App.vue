@@ -3,7 +3,7 @@
 <div id="app">
   <div  class="app container-fluid">
     <div class="row">
-    
+
       <nav class="d-md-block sidebar">
         <div class="sidebar-sticky">
           <b-nav vertical pills >
@@ -158,7 +158,7 @@ body {
 
 [role="main"] {
   padding-top: 0px; /* Space for fixed navbar */
-  margin-left: 120px;
+  padding-left: 120px;
   width: 100%;
 }
 
