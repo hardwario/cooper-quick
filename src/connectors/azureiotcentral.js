@@ -64,7 +64,7 @@ function send(device, payload) {
 function getConnectionString(scopeId, deviceId, primaryKey) {
   return new Promise((resolve, reject) => {
       let options = {
-          url: 'http://127.0.0.1:8888/endpoint',
+          url: 'https://cooper.hardwario.cloud/quick/endpoint',
           headers: {
               'Content-Type': 'application/json'
           },
